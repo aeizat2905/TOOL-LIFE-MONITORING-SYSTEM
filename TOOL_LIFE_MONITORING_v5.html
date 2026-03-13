@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mold Tool Life Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d1117;
+    --panel:#131b26;
+    --card:#19243a;
+    --card-hover:#1e2d47;
+    --border:#263550;
+    --border-strong:#3a5070;
+    --accent:#38b6ff;
+    --accent-glow:rgba(56,182,255,0.18);
+    --green:#2ecc71;
+    --green-glow:rgba(46,204,113,0.18);
+    --yellow:#f39c12;
+    --yellow-glow:rgba(243,156,18,0.18);
+    --red:#e74c3c;
+    --red-glow:rgba(231,76,60,0.18);
+    --muted:#6b82a0;
+    --muted-light:#8fa3bd;
+    --text:#dce8f5;
+    --text-strong:#f0f6ff;
+    --text-dim:#8fa3bd;
+    --mono:'IBM Plex Mono',monospace;
+    --sans:'IBM Plex Sans',sans-serif;
+    --fs-xs:12px;
+    --fs-sm:13px;
+    --fs-base:15px;
+    --fs-md:16px;
+    --fs-lg:18px;
+    --fs-xl:22px;
+    --fs-2xl:28px;
+    --fs-3xl:36px;
+    --lh:1.6;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  body{
+    background:var(--bg);color:var(--text);font-family:var(--sans);
+    font-size:var(--fs-base);line-height:var(--lh);min-height:100vh;overflow-x:hidden;
+    background-image:
+      radial-gradient(ellipse 70% 35% at 50% -5%, rgba(56,182,255,0.06) 0%, transparent 65%),
+      linear-gradient(180deg, rgba(19,27,38,0) 0%, rgba(13,17,23,0.6) 100%);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ══ HEADER ══ */
+  header{
+    background:rgba(13,17,23,0.97);
+    border-bottom:2px solid var(--border);
+    padding:0 36px;
+    display:flex;align-items:center;justify-content:space-between;
+    height:72px;position:sticky;top:0;z-index:100;
+    backdrop-filter:blur(12px);
+    box-shadow:0 2px 24px rgba(0,0,0,0.4);
+  }
+
+  .logo{display:flex;align-items:center;gap:16px;}
+  .logo-icon{
+    width:44px;height:44px;
+    background:linear-gradient(135deg,rgba(56,182,255,0.15),rgba(56,182,255,0.05));
+    border:2px solid var(--accent);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:15px;font-weight:600;color:var(--accent);
+    box-shadow:0 0 20px rgba(56,182,255,0.2);
+    animation:pulse-border 4s ease-in-out infinite;
+    flex-shrink:0;
+  }
+  @keyframes pulse-border{0%,100%{box-shadow:0 0 10px rgba(56,182,255,0.2);}50%{box-shadow:0 0 22px rgba(56,182,255,0.45);}}
+  .logo-text{font-size:var(--fs-md);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-strong);}
+  .logo-sub{font-family:var(--mono);font-size:var(--fs-xs);color:var(--muted-light);letter-spacing:1px;margin-top:2px;}
+
+  .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  #last-updated{font-family:var(--mono);font-size:var(--fs-sm);color:var(--muted-light);padding:0 4px;}
+
+  .hbtn{
+    border:none;padding:9px 16px;border-radius:6px;
+    font-family:var(--sans);font-weight:600;
+    font-size:var(--fs-sm);letter-spacing:0.5px;
+    cursor:pointer;transition:all 0.2s;white-space:nowrap;
+  }
+  .hbtn-primary{background:var(--accent);color:#0d1117;font-weight:700;}
+  .hbtn-primary:hover{background:#60c8ff;box-shadow:0 0 18px rgba(56,182,255,0.45);transform:translateY(-1px);}
+  .hbtn-outline{background:transparent;border:1.5px solid var(--border-strong);color:var(--muted-light);}
+  .hbtn-outline:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
+  .hbtn-green{background:transparent;border:1.5px solid var(--green);color:var(--green);}
+  .hbtn-green:hover{background:var(--green-glow);box-shadow:0 0 12px var(--green-glow);}
+  .hbtn-yellow{background:transparent;border:1.5px solid var(--yellow);color:var(--yellow);}
+  .hbtn-yellow:hover{background:var(--yellow-glow);}
+
+  .sync-status{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:var(--fs-sm);}
+  .sync-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);transition:background 0.3s;flex-shrink:0;}
+  .sync-dot.connected{background:var(--green);box-shadow:0 0 8px rgba(46,204,113,0.7);animation:sync-pulse 2.5s ease-in-out infinite;}
+  .sync-dot.syncing{background:var(--yellow);animation:sync-blink 0.6s ease-in-out infinite;}
+  .sync-dot.error{background:var(--red);}
+  @keyframes sync-pulse{0%,100%{opacity:1;}50%{opacity:0.45;}}
+  @keyframes sync-blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+  /* ══ FIREBASE CONFIG SETUP MODAL ══ */
+  .setup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:10000;
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+  .setup-overlay.hidden{display:none;}
+  .setup-box{background:var(--card);border:2px solid var(--border-strong);border-radius:14px;
+    padding:40px;width:620px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+  .setup-box h2{font-family:var(--mono);font-size:var(--fs-md);color:var(--accent);letter-spacing:1.5px;
+    text-transform:uppercase;margin-bottom:10px;font-weight:600;}
+  .setup-box p{font-size:var(--fs-base);color:var(--text-dim);margin-bottom:18px;line-height:var(--lh);}
+  .setup-steps{margin-bottom:24px;}
+  .setup-step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+  .step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#0d1117;
+    font-family:var(--mono);font-size:var(--fs-sm);font-weight:700;display:flex;align-items:center;
+    justify-content:center;flex-shrink:0;margin-top:2px;}
+  .step-text{font-size:var(--fs-base);color:var(--text);line-height:var(--lh);}
+  .step-text a{color:var(--accent);text-decoration:none;}
+  .step-text a:hover{text-decoration:underline;}
+  .step-text code{background:var(--bg);border:1px solid var(--border-strong);padding:2px 8px;
+    border-radius:4px;font-family:var(--mono);font-size:var(--fs-sm);color:var(--yellow);}
+  .config-textarea{width:100%;height:190px;background:var(--bg);border:2px solid var(--border);
+    color:var(--text);padding:14px;border-radius:8px;font-family:var(--mono);font-size:var(--fs-sm);
+    resize:vertical;line-height:1.6;}
+  .config-textarea:focus{outline:none;border-color:var(--accent);}
+  .config-textarea::placeholder{color:var(--muted);}
+  .config-err{color:var(--red);font-family:var(--mono);font-size:var(--fs-sm);margin-top:10px;display:none;}
+  .config-err.show{display:block;}
+  .setup-footer{display:flex;gap:12px;justify-content:flex-end;margin-top:20px;}
+  .setup-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+  /* ══ STATS BAR ══ */
+  .stats-bar{display:flex;gap:2px;background:var(--bg);border-bottom:2px solid var(--border);}
+  .stat-cell{flex:1;background:var(--panel);padding:20px 28px;
+    display:flex;align-items:center;gap:16px;
+    cursor:pointer;transition:background 0.2s;
+    position:relative;user-select:none;border-bottom:3px solid transparent;}
+  .stat-cell:hover{background:var(--card-hover);}
+  .stat-cell.active-filter{background:rgba(56,182,255,0.08);border-bottom-color:var(--accent);}
+  .stat-cell.critical.active-filter{border-bottom-color:var(--red);background:rgba(231,76,60,0.07);}
+  .stat-cell.warning.active-filter{border-bottom-color:var(--yellow);background:rgba(243,156,18,0.07);}
+  .stat-cell.good.active-filter{border-bottom-color:var(--green);background:rgba(46,204,113,0.07);}
+  .stat-cell.scrap-cell.active-filter{border-bottom-color:var(--muted);background:rgba(107,130,160,0.1);}
+  .stat-cell-hint{position:absolute;bottom:6px;right:10px;font-size:var(--fs-xs);
+    color:var(--muted);font-family:var(--mono);opacity:0;transition:opacity 0.2s;}
+  .stat-cell:hover .stat-cell-hint{opacity:1;}
+  .stat-icon{font-size:28px;flex-shrink:0;opacity:0.65;}
+  .stat-num{font-family:var(--mono);font-size:var(--fs-3xl);line-height:1;font-weight:600;}
+  .stat-label{font-size:var(--fs-sm);color:var(--text-dim);margin-top:4px;font-weight:500;}
+  .stat-cell.critical .stat-num{color:var(--red);}
+  .stat-cell.warning .stat-num{color:var(--yellow);}
+  .stat-cell.good .stat-num{color:var(--green);}
+  .stat-cell.total .stat-num{color:var(--accent);}
+
+  /* ══ TOOLBAR ══ */
+  .toolbar{padding:18px 36px;display:flex;align-items:center;gap:12px;
+    flex-wrap:wrap;border-bottom:2px solid var(--border);background:var(--panel);}
+  .search-wrap{position:relative;display:flex;align-items:center;}
+  .search-box{background:var(--card);border:2px solid var(--border);color:var(--text-strong);
+    padding:11px 42px 11px 46px;border-radius:8px;font-family:var(--mono);font-size:var(--fs-base);
+    width:340px;transition:all 0.2s;}
+  .search-box:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,182,255,0.12);width:380px;}
+  .search-box::placeholder{color:var(--muted);}
+  .search-icon{position:absolute;left:14px;font-size:16px;color:var(--muted);pointer-events:none;}
+  .search-clear{position:absolute;right:12px;background:transparent;border:none;
+    color:var(--muted);cursor:pointer;font-size:16px;padding:2px 4px;border-radius:4px;
+    display:none;line-height:1;transition:color 0.15s;}
+  .search-clear:hover{color:var(--text);}
+  .search-clear.visible{display:block;}
+  .result-count{font-family:var(--mono);font-size:var(--fs-sm);color:var(--muted-light);white-space:nowrap;}
+  .result-count span{color:var(--accent);font-weight:600;}
+  .match-highlight{background:rgba(56,182,255,0.2);color:var(--accent);border-radius:3px;padding:0 2px;}
+  .filter-select{background:var(--card);border:2px solid var(--border);color:var(--text);
+    padding:10px 14px;border-radius:6px;font-family:var(--sans);font-size:var(--fs-base);
+    cursor:pointer;transition:border-color 0.2s;}
+  .filter-select:focus{outline:none;border-color:var(--accent);}
+  .toolbar-right{margin-left:auto;display:flex;gap:10px;}
+
+  /* ══ MAIN TAB BAR ══ */
+  .main-tab-bar{display:flex;align-items:center;background:var(--panel);
+    border-bottom:2px solid var(--border);padding:0 36px;}
+  .main-tab-btn{display:flex;align-items:center;gap:10px;padding:16px 22px;
+    font-family:var(--sans);font-size:var(--fs-base);font-weight:600;
+    color:var(--text-dim);border:none;background:transparent;cursor:pointer;
+    border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.2s;}
+  .main-tab-btn:hover{color:var(--text-strong);}
+  .main-tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .main-tab-btn.scrap-tab.active{color:var(--muted-light);border-bottom-color:var(--muted);}
+  .main-tab-count{font-family:var(--mono);font-size:var(--fs-sm);padding:3px 10px;border-radius:12px;
+    background:rgba(107,130,160,0.2);color:var(--muted-light);font-weight:500;}
+  .main-tab-btn.active .main-tab-count{background:rgba(56,182,255,0.15);color:var(--accent);}
+  .main-tab-btn.scrap-tab.active .main-tab-count{background:rgba(107,130,160,0.3);color:var(--muted-light);}
+
+  /* ══ ALERT BANNER ══ */
+  .main{padding:28px 36px;}
+  .alert-banner{display:none;
+    background:rgba(231,76,60,0.1);border:2px solid rgba(231,76,60,0.4);
+    border-radius:8px;padding:16px 24px;margin:20px 36px 0;
+    font-size:var(--fs-base);align-items:center;gap:14px;
+    animation:blink-border 2.5s ease-in-out infinite;}
+  @keyframes blink-border{0%,100%{border-color:rgba(231,76,60,0.35);}50%{border-color:rgba(231,76,60,0.75);}}
+  .alert-banner.visible{display:flex;}
+
+  /* ══ MOLD CARDS ══ */
+  .mold-card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+    margin-bottom:14px;overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;}
+  .mold-card:hover{border-color:var(--border-strong);box-shadow:0 2px 16px rgba(0,0,0,0.3);}
+  .mold-card.critical-card{border-left:4px solid var(--red);}
+  .mold-card.warning-card{border-left:4px solid var(--yellow);}
+  .mold-header{padding:18px 24px;display:flex;align-items:center;gap:16px;
+    cursor:pointer;user-select:none;transition:background 0.15s;}
+  .mold-header:hover{background:rgba(255,255,255,0.025);}
+  .expand-toggle{width:24px;height:24px;border:1.5px solid var(--border-strong);border-radius:4px;
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted-light);
+    flex-shrink:0;transition:all 0.2s;}
+  .mold-card.expanded .expand-toggle{border-color:var(--accent);color:var(--accent);background:rgba(56,182,255,0.1);}
+  .mold-name-row{display:flex;flex-direction:column;gap:2px;min-width:210px;}
+  .mold-name-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;font-weight:600;}
+  .mold-name{font-family:var(--mono);font-size:var(--fs-base);color:var(--accent);font-weight:500;}
+  .mold-oldname-row{display:flex;flex-direction:column;gap:2px;min-width:150px;}
+  .mold-oldname-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;font-weight:600;}
+  .mold-oldname{font-size:var(--fs-sm);color:var(--text-dim);}
+  .mini-bar-wrap{flex:1;min-width:100px;max-width:180px;}
+  .mini-bar-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+  .mini-bar-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
+  .badge{font-family:var(--mono);font-size:var(--fs-xs);padding:4px 10px;border-radius:4px;
+    text-transform:uppercase;letter-spacing:0.8px;font-weight:600;white-space:nowrap;}
+  .badge-critical{background:rgba(231,76,60,0.15);color:var(--red);border:1.5px solid rgba(231,76,60,0.4);}
+  .badge-warning{background:rgba(243,156,18,0.15);color:var(--yellow);border:1.5px solid rgba(243,156,18,0.4);}
+  .badge-scrap{background:rgba(107,130,160,0.15);color:var(--muted-light);border:1.5px solid rgba(107,130,160,0.3);}
+  .mold-card.scrap-card{border-left:4px solid var(--muted);opacity:0.8;}
+  .mold-card.scrap-card .mold-name{color:var(--muted-light);}
+  .mold-card.scrap-card:hover{opacity:1;}
+  .badge-ok{background:rgba(46,204,113,0.1);color:var(--green);border:1.5px solid rgba(46,204,113,0.3);}
+  .mold-actions{display:flex;gap:8px;margin-left:auto;}
+  .icon-btn{background:transparent;border:1.5px solid var(--border-strong);color:var(--muted-light);
+    width:32px;height:32px;border-radius:6px;display:flex;align-items:center;
+    justify-content:center;cursor:pointer;font-size:14px;transition:all 0.2s;}
+  .icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
+  .icon-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(231,76,60,0.1);}
+
+  /* ══ COMPONENTS PANEL ══ */
+  .components-panel{display:none;border-top:2px solid var(--border);
+    padding:20px 24px 24px;background:rgba(13,17,23,0.5);}
+  .mold-card.expanded .components-panel{display:block;}
+  .comp-grid{display:grid;grid-template-columns:170px 1fr 130px 130px 100px 90px 90px 140px;gap:10px;}
+  .comp-head{padding:0 0 10px;border-bottom:2px solid var(--border);margin-bottom:10px;}
+  .comp-head span{font-size:var(--fs-xs);color:var(--muted-light);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .comp-row{align-items:center;padding:10px 0;border-bottom:1px solid rgba(38,53,80,0.6);}
+  .comp-name{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text);font-weight:500;}
+  .prog-wrap{position:relative;}
+  .prog-bg{height:24px;background:rgba(0,0,0,0.4);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+  .prog-fill{height:100%;border-radius:3px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1);position:relative;}
+  .prog-fill::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);animation:shimmer 2.5s infinite;}
+  @keyframes shimmer{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+  .prog-fill.green{background:linear-gradient(90deg,#1a9e52,#2ecc71);}
+  .prog-fill.yellow{background:linear-gradient(90deg,#b8780d,#f39c12);}
+  .prog-fill.red{background:linear-gradient(90deg,#a02020,#e74c3c);animation:blink-bar 1.2s ease-in-out infinite;}
+  @keyframes blink-bar{0%,100%{opacity:1;}50%{opacity:0.55;}}
+  .prog-pct{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text-strong);position:absolute;right:8px;
+    top:50%;transform:translateY(-50%);text-shadow:0 0 6px rgba(0,0,0,0.9);font-weight:600;}
+  .num-input{background:var(--bg);border:2px solid var(--border);color:var(--text-strong);
+    padding:6px 10px;border-radius:5px;font-family:var(--mono);font-size:var(--fs-sm);
+    width:100%;text-align:right;transition:border-color 0.2s;}
+  .num-input:focus{outline:none;border-color:var(--accent);}
+  .current-meter{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text);}
+  .remarks-cell{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:0.5px;}
+  .remarks-change{color:var(--red);animation:blink-text 1.2s ease-in-out infinite;font-weight:700;}
+  .remarks-ok{color:var(--green);font-weight:500;}
+  @keyframes blink-text{0%,100%{opacity:1;}50%{opacity:0.35;}}
+  .reset-btn{background:transparent;border:1.5px solid var(--border-strong);color:var(--muted-light);
+    padding:5px 10px;border-radius:4px;font-family:var(--mono);font-size:var(--fs-xs);
+    cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;}
+  .reset-btn:hover{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-glow);}
+  .change-tool-btn{background:transparent;border:1.5px solid rgba(56,182,255,0.35);color:var(--accent);
+    padding:5px 10px;border-radius:4px;font-family:var(--mono);font-size:var(--fs-xs);
+    cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;display:block;}
+  .change-tool-btn:hover{border-color:var(--accent);background:var(--accent-glow);}
+  .num-input.pending-edit{border-color:var(--yellow)!important;background:rgba(243,156,18,0.07)!important;}
+  .add-comp-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border-strong);}
+  .new-comp-input{background:var(--bg);border:2px dashed var(--border-strong);color:var(--text);
+    padding:8px 14px;border-radius:5px;font-family:var(--mono);font-size:var(--fs-sm);width:220px;}
+  .new-comp-input:focus{outline:none;border-color:var(--accent);border-style:solid;}
+  .btn-add-comp{background:transparent;border:1.5px solid var(--green);color:var(--green);
+    padding:8px 14px;border-radius:5px;font-family:var(--mono);font-size:var(--fs-sm);
+    cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;}
+  .btn-add-comp:hover{background:var(--green-glow);}
+
+  .scrap-section-banner{display:flex;align-items:center;gap:14px;
+    background:rgba(107,130,160,0.08);border:1.5px solid rgba(107,130,160,0.25);
+    border-radius:8px;padding:14px 20px;margin-bottom:18px;
+    font-size:var(--fs-base);color:var(--text-dim);}
+  .scrap-section-banner strong{color:var(--text);}
+
+  /* ══ MODALS ══ */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);
+    z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+  .modal-overlay.active{display:flex;}
+  .modal{background:var(--card);border:2px solid var(--border-strong);border-radius:12px;
+    padding:32px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;
+    box-shadow:0 24px 64px rgba(0,0,0,0.6);}
+  .modal-wide{width:860px;}
+  .modal h3{font-size:var(--fs-lg);font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    margin-bottom:20px;color:var(--accent);font-family:var(--mono);}
+  .form-row{margin-bottom:16px;}
+  .form-label{font-size:var(--fs-sm);color:var(--muted-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:block;font-weight:600;}
+  .form-input{background:var(--bg);border:2px solid var(--border);color:var(--text-strong);
+    padding:11px 14px;border-radius:6px;font-family:var(--mono);font-size:var(--fs-base);width:100%;}
+  .form-input:focus{outline:none;border-color:var(--accent);}
+  .modal-footer{display:flex;gap:12px;justify-content:flex-end;margin-top:24px;}
+  .btn-primary{background:var(--accent);color:#0d1117;border:none;padding:11px 24px;border-radius:6px;
+    font-family:var(--sans);font-weight:700;font-size:var(--fs-base);letter-spacing:0.5px;cursor:pointer;transition:all 0.2s;}
+  .btn-primary:hover{background:#60c8ff;box-shadow:0 0 18px rgba(56,182,255,0.35);transform:translateY(-1px);}
+  .btn-secondary{background:transparent;color:var(--muted-light);border:2px solid var(--border-strong);
+    padding:11px 24px;border-radius:6px;font-family:var(--sans);font-size:var(--fs-base);cursor:pointer;transition:all 0.2s;}
+  .btn-secondary:hover{border-color:var(--accent);color:var(--text);}
+
+  .upload-area{border:2px dashed var(--border-strong);border-radius:10px;padding:40px;
+    text-align:center;margin:18px 0;cursor:pointer;transition:all 0.2s;}
+  .upload-area:hover,.upload-area.drag-over{border-color:var(--accent);background:var(--accent-glow);}
+  .upload-area p{color:var(--text-dim);font-size:var(--fs-base);margin-top:10px;}
+
+  .hist-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:var(--fs-sm);}
+  .hist-table th{text-align:left;padding:11px 12px;font-size:var(--fs-xs);text-transform:uppercase;
+    letter-spacing:1px;color:var(--muted-light);border-bottom:2px solid var(--border);
+    background:var(--panel);font-weight:600;}
+  .hist-table td{padding:11px 12px;border-bottom:1px solid rgba(38,53,80,0.5);color:var(--text);line-height:1.5;}
+  .hist-table tr:hover td{background:rgba(56,182,255,0.04);}
+  .hist-empty{text-align:center;color:var(--muted-light);padding:36px;font-size:var(--fs-base);}
+  .tab-row{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);padding-bottom:0;}
+  .tab-btn{background:transparent;border:none;border-bottom:3px solid transparent;
+    color:var(--muted-light);padding:10px 18px;font-family:var(--sans);font-size:var(--fs-base);
+    cursor:pointer;transition:all 0.2s;margin-bottom:-2px;font-weight:500;}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+  .tab-btn:hover{color:var(--text);}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
+  .dl-row{display:flex;gap:10px;margin-top:16px;justify-content:flex-end;}
+
+  .empty-state{text-align:center;padding:90px 20px;color:var(--muted-light);}
+  .empty-state h3{font-size:var(--fs-xl);margin-bottom:10px;color:var(--text);font-weight:600;}
+  .empty-state p{font-size:var(--fs-base);}
+
+  .toast{position:fixed;bottom:28px;right:28px;background:var(--card);
+    border:2px solid var(--border-strong);border-left:4px solid var(--green);
+    padding:14px 24px;border-radius:8px;font-family:var(--mono);font-size:var(--fs-sm);
+    z-index:300;transform:translateY(120px);opacity:0;transition:all 0.3s;
+    box-shadow:0 8px 32px rgba(0,0,0,0.5);color:var(--text-strong);}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.error{border-left-color:var(--red);}
+
+  /* ══ LOGIN SCREEN ══ */
+  #login-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;
+    background-image:
+      radial-gradient(ellipse 55% 55% at 50% 45%, rgba(56,182,255,0.07) 0%, transparent 70%),
+      repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(56,182,255,0.025) 48px,rgba(56,182,255,0.025) 49px),
+      repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(56,182,255,0.025) 48px,rgba(56,182,255,0.025) 49px);}
+  #login-screen.hidden{display:none;}
+  .login-box{width:440px;max-width:94vw;animation:login-in 0.5s cubic-bezier(0.4,0,0.2,1);}
+  @keyframes login-in{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+  .login-logo{text-align:center;margin-bottom:36px;}
+  .login-logo-icon{width:72px;height:72px;
+    background:linear-gradient(135deg,rgba(56,182,255,0.15),rgba(56,182,255,0.05));
+    border:2px solid var(--accent);border-radius:14px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:26px;font-weight:600;color:var(--accent);
+    margin-bottom:18px;box-shadow:0 0 40px rgba(56,182,255,0.25);
+    animation:pulse-border 4s ease-in-out infinite;}
+  .login-logo h1{font-size:var(--fs-xl);font-weight:700;letter-spacing:2px;text-transform:uppercase;
+    margin-bottom:6px;color:var(--text-strong);}
+  .login-logo p{font-family:var(--mono);font-size:var(--fs-sm);color:var(--muted-light);letter-spacing:1px;}
+  .role-selector{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;}
+  .role-card{background:var(--card);border:2px solid var(--border);border-radius:10px;
+    padding:24px 18px;text-align:center;cursor:pointer;transition:all 0.2s;}
+  .role-card:hover{border-color:var(--border-strong);background:var(--card-hover);}
+  .role-card.selected{border-color:var(--accent);background:rgba(56,182,255,0.08);
+    box-shadow:0 0 20px rgba(56,182,255,0.18);}
+  .role-icon{font-size:32px;margin-bottom:10px;}
+  .role-title{font-size:var(--fs-md);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;}
+  .role-desc{font-size:var(--fs-sm);color:var(--muted-light);line-height:1.5;}
+  .role-card.selected .role-title{color:var(--accent);}
+  #admin-form{background:var(--card);border:2px solid var(--border);border-radius:10px;
+    padding:28px;margin-bottom:18px;animation:login-in 0.3s ease;}
+  #admin-form .form-label{font-size:var(--fs-sm);color:var(--muted-light);text-transform:uppercase;
+    letter-spacing:1px;margin-bottom:8px;display:block;font-weight:600;}
+  #admin-form .form-input{background:var(--bg);border:2px solid var(--border);color:var(--text-strong);
+    padding:12px 14px;border-radius:6px;font-family:var(--mono);font-size:var(--fs-base);width:100%;
+    transition:border-color 0.2s;margin-bottom:14px;}
+  #admin-form .form-input:focus{outline:none;border-color:var(--accent);}
+  .login-err{color:var(--red);font-family:var(--mono);font-size:var(--fs-sm);
+    margin-bottom:14px;display:none;text-align:center;animation:login-in 0.2s ease;}
+  .login-err.show{display:block;}
+  .login-submit{width:100%;background:var(--accent);color:#0d1117;border:none;
+    padding:14px;border-radius:6px;font-family:var(--sans);font-weight:700;font-size:var(--fs-base);
+    letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
+  .login-submit:hover{background:#60c8ff;box-shadow:0 0 22px rgba(56,182,255,0.4);}
+  .login-submit.user-btn{background:transparent;border:2px solid var(--green);
+    color:var(--green);margin-top:10px;}
+  .login-submit.user-btn:hover{background:var(--green-glow);box-shadow:0 0 18px var(--green-glow);}
+  .login-note{text-align:center;font-family:var(--mono);font-size:var(--fs-sm);color:var(--muted-light);
+    margin-top:16px;line-height:1.7;}
+  .role-badge{font-family:var(--mono);font-size:var(--fs-sm);padding:4px 12px;border-radius:14px;
+    text-transform:uppercase;letter-spacing:0.8px;font-weight:600;}
+  .role-badge.admin{background:rgba(56,182,255,0.15);color:var(--accent);border:1.5px solid rgba(56,182,255,0.4);}
+  .role-badge.user{background:rgba(46,204,113,0.1);color:var(--green);border:1.5px solid rgba(46,204,113,0.3);}
+
+  body.user-mode .reset-btn,
+  body.user-mode .change-tool-btn,
+  body.user-mode .btn-add-comp,
+  body.user-mode .new-comp-input,
+  body.user-mode .add-comp-row,
+  body.user-mode .icon-btn.danger,
+  body.user-mode .num-input,
+  body.user-mode .toolbar-right .hbtn-green,
+  body.user-mode #btn-upload,
+  body.user-mode #btn-save-changes,
+  body.user-mode #btn-discard-changes,
+  body.user-mode #btn-download { display:none !important; }
+
+  .print-sel-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .print-sel-count{font-family:var(--mono);font-size:var(--fs-sm);color:var(--accent);margin-left:auto;font-weight:600;}
+  .print-list{max-height:440px;overflow-y:auto;border:2px solid var(--border);border-radius:8px;}
+  .print-list-item{display:flex;align-items:center;gap:14px;padding:12px 16px;
+    border-bottom:1px solid rgba(38,53,80,0.5);cursor:pointer;transition:background 0.15s;user-select:none;}
+  .print-list-item:last-child{border-bottom:none;}
+  .print-list-item:hover{background:rgba(56,182,255,0.04);}
+  .print-list-item.checked{background:rgba(56,182,255,0.07);}
+  .print-list-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
+  .print-item-id{font-family:var(--mono);font-size:var(--fs-sm);color:var(--accent);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;}
+  .print-item-old{font-size:var(--fs-sm);color:var(--text-dim);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .print-item-type{font-family:var(--mono);font-size:var(--fs-xs);color:var(--muted-light);background:rgba(38,53,80,0.8);
+    padding:3px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0;}
+  .print-group-header{padding:8px 16px;font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;
+    letter-spacing:1.5px;color:var(--muted-light);background:rgba(13,17,23,0.6);
+    border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1;}
+  #print-output{display:none;}
+  .po-header{text-align:center;padding:12px 0 18px;border-bottom:2px solid #333;margin-bottom:18px;}
+  .po-header h1{font-size:20px;font-weight:700;font-family:Arial,sans-serif;}
+  .po-header p{font-size:12px;color:#555;margin-top:4px;font-family:Arial,sans-serif;}
+  .po-card{border:1px solid #ccc;border-radius:4px;margin-bottom:14px;page-break-inside:avoid;}
+  .po-card.po-critical{border-left:4px solid #d00;}
+  .po-card.po-warning{border-left:4px solid #f80;}
+  .po-card.po-scrap{border-left:4px solid #aaa;opacity:0.75;}
+  .po-card-head{background:#f5f5f5;padding:10px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #ddd;}
+  .po-mold-id{font-family:monospace;font-size:14px;font-weight:700;color:#0066aa;flex:1;}
+  .po-mold-old{font-size:12px;color:#666;flex:1;}
+  .po-mold-type{font-size:11px;background:#e0e0e0;padding:2px 8px;border-radius:10px;font-family:monospace;}
+  .po-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:3px;font-family:monospace;}
+  .po-badge-critical{background:#fdd;color:#c00;border:1px solid #c00;}
+  .po-badge-warning{background:#ffe;color:#a60;border:1px solid #f80;}
+  .po-badge-ok{background:#dfd;color:#060;border:1px solid #090;}
+  .po-badge-scrap{background:#eee;color:#888;border:1px solid #aaa;}
+  .po-table{width:100%;border-collapse:collapse;font-family:monospace;font-size:11px;}
+  .po-table th{text-align:left;padding:6px 9px;background:#f0f0f0;border-bottom:1px solid #ccc;
+    font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#555;}
+  .po-table td{padding:6px 9px;border-bottom:1px solid #eee;color:#222;}
+  .po-table tr:last-child td{border-bottom:none;}
+  .po-td-need{color:#c00;font-weight:700;}
+  .po-td-ok{color:#060;}
+  .po-bar-wrap{width:100px;height:10px;background:#eee;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:4px;}
+  .po-bar-fill{height:100%;border-radius:3px;}
+  .po-bar-green{background:#00b248;} .po-bar-yellow{background:#f80;} .po-bar-red{background:#d00;}
+  .po-summary{font-family:Arial,sans-serif;font-size:11px;color:#555;margin-top:16px;text-align:right;}
+  @media print {
+    body > *:not(#print-output){ display:none !important; }
+    #print-output{ display:block !important; }
+    body{background:#fff !important;color:#000 !important;}
+  }
+
+  /* ══ PRODUCTION ID ══ */
+  .prod-id-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(243,156,18,0.13);border:1.5px solid rgba(243,156,18,0.4);border-radius:5px;padding:4px 11px;font-family:var(--mono);font-size:var(--fs-sm);color:var(--yellow);font-weight:600;white-space:nowrap;}
+  .prod-id-badge-label{font-size:10px;opacity:0.65;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;color:var(--yellow);}
+  .prod-id-none{font-family:var(--mono);font-size:12px;color:var(--muted);font-style:italic;}
+  .prod-id-section{margin-top:14px;padding:13px 16px;background:rgba(243,156,18,0.05);border:1.5px dashed rgba(243,156,18,0.28);border-radius:7px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .prod-id-section-label{font-family:var(--mono);font-size:var(--fs-sm);color:var(--yellow);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;}
+  .prod-id-field{flex:1;min-width:180px;background:var(--bg);border:2px solid rgba(243,156,18,0.3);color:var(--text-strong);padding:8px 12px;border-radius:5px;font-family:var(--mono);font-size:var(--fs-base);transition:border-color 0.2s;}
+  .prod-id-field:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 3px rgba(243,156,18,0.12);}
+  .prod-id-field::placeholder{color:var(--muted);font-size:var(--fs-sm);}
+  .prod-id-save{background:var(--yellow);color:#0d1117;border:none;padding:9px 18px;border-radius:5px;font-family:var(--sans);font-size:var(--fs-sm);font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .prod-id-save:hover{filter:brightness(1.1);box-shadow:0 0 14px rgba(243,156,18,0.35);}
+  .prod-id-clear{background:transparent;border:1.5px solid var(--border-strong);color:var(--muted-light);padding:9px 13px;border-radius:5px;font-family:var(--mono);font-size:var(--fs-xs);cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.5px;}
+  .prod-id-clear:hover{border-color:var(--red);color:var(--red);}
+  .prod-id-hl{background:rgba(243,156,18,0.22);color:var(--yellow);border-radius:2px;padding:0 2px;}
+
+  /* ══ LAPTOP (≤1366px) ══ */
+  @media (max-width: 1366px) {
+    :root { --fs-xs:11px;--fs-sm:12px;--fs-base:13px;--fs-md:14px;--fs-lg:16px;--fs-xl:19px;--fs-2xl:22px;--fs-3xl:26px; }
+    header { height:56px; padding:0 20px; }
+    .logo-icon { width:36px; height:36px; font-size:13px; }
+    .logo-text { font-size:13px; } .logo-sub { font-size:10px; }
+    .hbtn { padding:7px 11px; font-size:11px; }
+    .sync-status { font-size:11px; } #last-updated { display:none; }
+    .stats-bar { gap:1px; }
+    .stat-cell { padding:12px 16px; gap:10px; }
+    .stat-icon { font-size:20px; } .stat-num { font-size:24px; }
+    .stat-label { font-size:11px; margin-top:2px; } .stat-cell-hint { display:none; }
+    #week-bar { padding:8px 20px !important; gap:16px !important; }
+    .toolbar { padding:12px 20px; gap:8px; }
+    .search-box { width:220px; padding:8px 36px 8px 38px; font-size:12px; }
+    .search-box:focus { width:260px; }
+    .filter-select { padding:7px 10px; font-size:12px; }
+    .toolbar-right { gap:7px; }
+    .main-tab-bar { padding:0 20px; }
+    .main-tab-btn { padding:11px 16px; font-size:12px; gap:7px; }
+    .main-tab-count { font-size:11px; padding:2px 8px; }
+    .main { padding:16px 20px; }
+    .alert-banner { margin:12px 20px 0; padding:12px 18px; font-size:12px; }
+    .mold-card { margin-bottom:10px; border-radius:8px; }
+    .mold-header { padding:12px 16px; gap:10px; }
+    .mold-name-row { min-width:160px; } .mold-oldname-row { min-width:110px; }
+    .mold-name { font-size:12px; } .mold-oldname { font-size:11px; }
+    .mold-name-label, .mold-oldname-label { font-size:9px; }
+    .badge { font-size:10px; padding:3px 7px; }
+    .prod-id-badge { font-size:11px; padding:3px 8px; } .prod-id-badge-label { font-size:9px; }
+    .prod-id-none { font-size:11px; }
+    .mini-bar-wrap { min-width:70px; max-width:120px; }
+    .icon-btn { width:28px; height:28px; font-size:12px; }
+    .expand-toggle { width:20px; height:20px; font-size:10px; }
+    .comp-grid { grid-template-columns:140px 1fr 110px 110px 85px 80px 80px 120px; gap:6px; font-size:11px; }
+    .comp-head span { font-size:10px; letter-spacing:0.5px; }
+    .comp-name { font-size:11px; } .prog-bg { height:20px; }
+    .prog-pct { font-size:10px; right:5px; }
+    .num-input { padding:4px 7px; font-size:11px; }
+    .current-meter { font-size:11px; } .remarks-cell { font-size:10px; }
+    .reset-btn, .change-tool-btn { padding:4px 7px; font-size:10px; }
+    .components-panel { padding:14px 16px 18px; }
+  }
+  @media (max-width: 1200px) { .components-panel { overflow-x:auto; } .comp-grid { min-width:780px; } }
+  @media (max-width: 1100px) {
+    :root { --fs-xs:10px;--fs-sm:11px;--fs-base:12px;--fs-md:13px;--fs-lg:15px;--fs-xl:17px;--fs-3xl:22px; }
+    .stats-bar { flex-wrap:wrap; }
+    .stat-cell { flex:1 1 calc(33.333% - 2px); min-width:120px; padding:10px 12px; }
+    .stat-icon { font-size:18px; } .stat-num { font-size:22px; }
+    header { height:52px; padding:0 14px; } .logo-text { font-size:12px; }
+    .search-box { width:180px; } .search-box:focus { width:220px; }
+    .mold-name-row { min-width:120px; } .mold-oldname-row { min-width:90px; }
+  }
+  .print-header{display:none;}
+
+  /* ══════════════════════════════════════════════════════
+     MOBILE RESPONSIVE — phones (≤768px)
+  ══════════════════════════════════════════════════════ */
+
+  @media (max-width: 768px) {
+    :root {
+      --fs-xs:10px; --fs-sm:11px; --fs-base:12px;
+      --fs-md:13px; --fs-lg:14px; --fs-xl:16px;
+      --fs-2xl:18px; --fs-3xl:20px;
+    }
+  }
+
+  /* HEADER: two-row layout on mobile */
+  @media (max-width: 768px) {
+    header {
+      height: auto;
+      padding: 10px 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { flex: 1; }
+    .logo-icon { width:30px; height:30px; font-size:11px; }
+    .logo-text { font-size:11px; letter-spacing:0.5px; }
+    .logo-sub  { font-size:9px; }
+    .header-right {
+      width: 100%;
+      justify-content: flex-start;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .hbtn { padding:6px 8px; font-size:10px; }
+    #last-updated, .sync-status span:last-child { display:none; }
+    #sync-status { gap:4px; }
+    .sync-dot { width:8px; height:8px; }
+    /* keep these buttons visible but compact */
+    #btn-upload { order:-1; }
+  }
+
+  /* STATS BAR: 2x2 + 1 full-width */
+  @media (max-width: 768px) {
+    .stats-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+    }
+    .stat-cell {
+      flex: unset;
+      padding: 10px 12px;
+      gap: 8px;
+      border-bottom: 2px solid transparent;
+      min-width: 0;
+    }
+    .stat-cell:last-child { grid-column: 1 / -1; }
+    .stat-icon { font-size:16px; }
+    .stat-num  { font-size:20px; }
+    .stat-label { font-size:9px; margin-top:2px; }
+    .stat-cell-hint { display:none; }
+  }
+
+  /* WEEK BAR */
+  @media (max-width: 768px) {
+    #week-bar {
+      padding: 8px 12px !important;
+      gap: 8px !important;
+      font-size: 10px;
+      flex-wrap: wrap;
+    }
+    #week-date, #week-num { font-size:11px !important; }
+    #week-remark { font-size:10px; width:100%; }
+    /* hide the divider pipe */
+    #week-bar > div[style*="width:1px"] { display:none; }
+  }
+
+  /* ALERT BANNER */
+  @media (max-width: 768px) {
+    .alert-banner { margin:8px 12px 0; padding:10px 12px; font-size:10px; gap:8px; }
+  }
+
+  /* TOOLBAR: stack vertically */
+  @media (max-width: 768px) {
+    .toolbar { padding:10px 12px; gap:7px; flex-direction:column; align-items:stretch; }
+    .search-wrap { width:100%; }
+    .search-box { width:100% !important; padding:9px 36px 9px 38px; font-size:12px; box-sizing:border-box; }
+    .search-box:focus { width:100% !important; }
+    .filter-select { width:100%; padding:8px 10px; font-size:12px; }
+    .toolbar-right { margin-left:0; display:flex; gap:6px; flex-wrap:wrap; }
+    .toolbar-right .hbtn { flex:1 1 auto; text-align:center; font-size:11px; padding:8px 6px; }
+    .result-count { font-size:10px; }
+  }
+
+  /* MAIN TAB BAR */
+  @media (max-width: 768px) {
+    .main-tab-bar { padding:0 12px; }
+    .main-tab-btn { padding:10px 10px; font-size:11px; gap:4px; }
+    .main-tab-count { font-size:10px; padding:2px 6px; }
+  }
+
+  /* MAIN CONTENT */
+  @media (max-width: 768px) {
+    .main { padding:10px 12px; }
+  }
+
+  /* MOLD CARDS */
+  @media (max-width: 768px) {
+    .mold-card { margin-bottom:8px; border-radius:7px; }
+    .mold-header {
+      padding: 10px 12px;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .expand-toggle { width:20px; height:20px; font-size:10px; margin-top:2px; flex-shrink:0; }
+
+    /* Name fields side by side */
+    .mold-name-row { min-width:0; flex:1 1 45%; }
+    .mold-oldname-row { min-width:0; flex:1 1 45%; }
+    .mold-name { font-size:11px; word-break:break-all; }
+    .mold-oldname { font-size:10px; }
+    .mold-name-label, .mold-oldname-label { font-size:8px; }
+
+    /* Used count and type inline */
+    .mold-header > div[style*="min-width:90px"] { font-size:10px !important; min-width:0 !important; flex:1 1 auto; }
+    .mold-header > div[style*="min-width:80px"] { font-size:10px !important; min-width:0 !important; flex:1 1 auto; }
+
+    /* Hide mini bar — too small to be useful */
+    .mini-bar-wrap { display:none; }
+
+    /* Badge */
+    .badge { font-size:9px; padding:2px 6px; }
+
+    /* Prod ID */
+    .prod-id-badge { font-size:10px; padding:2px 7px; }
+    .prod-id-badge-label { font-size:8px; }
+    .prod-id-none { font-size:9px; }
+
+    /* Action buttons: push to right */
+    .mold-actions { margin-left:auto; gap:4px; flex-shrink:0; }
+    .icon-btn { width:26px; height:26px; font-size:12px; }
+  }
+
+  /* COMPONENTS PANEL: horizontal scroll */
+  @media (max-width: 768px) {
+    .components-panel {
+      padding: 10px 10px 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .comp-grid {
+      min-width: 660px;
+      grid-template-columns: 120px 1fr 95px 95px 75px 70px 70px 110px;
+      gap: 4px;
+      font-size: 10px;
+    }
+    .comp-head span { font-size:9px; letter-spacing:0.2px; }
+    .comp-name { font-size:10px; }
+    .prog-bg { height:18px; }
+    .prog-pct { font-size:9px; right:4px; }
+    .num-input { padding:3px 5px; font-size:10px; }
+    .current-meter { font-size:10px; }
+    .remarks-cell { font-size:9px; }
+    .reset-btn, .change-tool-btn { padding:3px 5px; font-size:9px; letter-spacing:0; }
+
+    /* Production ID section */
+    .prod-id-section { flex-direction:column; align-items:stretch; gap:8px; padding:10px 12px; }
+    .prod-id-field { min-width:0; width:100%; font-size:13px; }
+    .prod-id-save, .prod-id-clear { width:100%; text-align:center; }
+
+    /* Add component row */
+    .add-comp-row { flex-direction:column; gap:7px; }
+    .new-comp-input { width:100%; }
+    .btn-add-comp { width:100%; text-align:center; }
+  }
+
+  /* LOGIN SCREEN */
+  @media (max-width: 768px) {
+    #login-screen { padding:16px; align-items:flex-start; padding-top:32px; overflow-y:auto; }
+    .login-box { width:100%; padding-bottom:24px; }
+    .login-logo-icon { width:52px; height:52px; font-size:18px; margin-bottom:12px; }
+    .login-logo h1 { font-size:14px; letter-spacing:1px; }
+    .login-logo p { font-size:10px; }
+    .login-logo { margin-bottom:20px; }
+    .role-selector { gap:10px; margin-bottom:18px; }
+    .role-card { padding:14px 10px; }
+    .role-icon { font-size:22px; margin-bottom:6px; }
+    .role-title { font-size:12px; }
+    .role-desc { font-size:10px; }
+    #admin-form { padding:18px 14px; margin-bottom:12px; }
+    .login-submit { padding:12px; font-size:13px; }
+    .login-note { font-size:11px; }
+    #fb-login-status { font-size:11px; }
+  }
+
+  /* MODALS: bottom sheet on mobile */
+  @media (max-width: 768px) {
+    .modal-overlay { align-items:flex-end; padding:0; }
+    .modal, .modal.modal-wide {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 16px 16px 0 0;
+      border-bottom: none;
+      max-height: 88vh;
+      padding: 20px 14px 28px;
+      /* Add safe area for home indicator */
+      padding-bottom: max(28px, env(safe-area-inset-bottom));
+    }
+    .modal h3 { font-size:13px; margin-bottom:14px; }
+    .form-input { font-size:13px; padding:10px 12px; }
+    .btn-primary, .btn-secondary { padding:10px 16px; font-size:13px; }
+    .modal-footer { gap:8px; flex-wrap:wrap; }
+    .modal-footer button { flex:1; text-align:center; }
+
+    /* Upload modal */
+    .upload-area { padding:22px 12px; }
+    #upload-week { width:80px !important; }
+    #upload-year { width:80px !important; }
+
+    /* History: scrollable tab row */
+    .tab-row { overflow-x:auto; flex-wrap:nowrap; gap:2px; }
+    .tab-btn { padding:8px 10px; font-size:10px; white-space:nowrap; flex-shrink:0; }
+
+    /* History: scrollable table */
+    #reset-history-body, #upload-history-body { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .hist-table { font-size:10px; min-width:560px; }
+    .hist-table th, .hist-table td { padding:6px 8px; }
+    .hist-table th { font-size:9px; }
+
+    /* Inner sub-tabs */
+    #tab-reset > div:nth-child(2) { overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; }
+
+    /* Download modal rows */
+    #download-modal .modal > div > div { flex-direction:column; gap:10px; }
+    #download-modal .modal > div > div > div { flex-direction:column; }
+
+    /* Print modal */
+    .print-sel-toolbar { gap:5px; flex-wrap:wrap; }
+    .print-sel-toolbar .hbtn { font-size:10px; padding:5px 7px; }
+    .print-list { max-height:300px; }
+    .print-list-item { padding:8px 10px; gap:8px; }
+    .print-item-id { font-size:10px; }
+    .print-item-old { display:none; }
+    .print-item-type { font-size:9px; }
+
+    /* dl-row: wrap */
+    .dl-row { flex-wrap:wrap; gap:6px; }
+    .dl-row .hbtn { flex:1 1 auto; text-align:center; font-size:10px; padding:7px 6px; }
+  }
+
+  /* SETUP OVERLAY */
+  @media (max-width: 768px) {
+    .setup-overlay { align-items:flex-end; }
+    .setup-box {
+      width:100%; margin:0; border-radius:16px 16px 0 0;
+      padding:22px 14px 28px; max-height:90vh;
+    }
+    .setup-box h2 { font-size:13px; }
+    .config-textarea { height:130px; font-size:11px; }
+    .step-text { font-size:12px; }
+    .setup-footer { flex-direction:column; }
+    .setup-footer button { width:100%; }
+  }
+
+  /* MISC */
+  @media (max-width: 768px) {
+    .scrap-section-banner { padding:10px 12px; font-size:11px; gap:8px; }
+    .empty-state { padding:40px 14px; }
+    .empty-state h3 { font-size:15px; }
+    .toast { left:12px; right:12px; bottom:16px; font-size:11px; padding:10px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ FIREBASE CONFIG SETUP OVERLAY ══ -->
+<div class="setup-overlay hidden" id="setup-overlay">
+  <div class="setup-box">
+    <h2>🔥 Firebase Setup Required</h2>
+    <p>This app uses <strong>Firebase Realtime Database</strong> to sync data across all devices in real time. You only need to do this setup once — paste your Firebase config below and it will be saved for future sessions.</p>
+    <div class="setup-steps">
+      <div class="setup-step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → Create a project (e.g. <code>mold-tool-life</code>)</div></div>
+      <div class="setup-step"><div class="step-num">2</div><div class="step-text">In your project → click <code>Realtime Database</code> in the left sidebar → <strong>Create Database</strong> → choose a region → Start in <strong>Test mode</strong></div></div>
+      <div class="setup-step"><div class="step-num">3</div><div class="step-text">Click the ⚙ gear icon → <strong>Project Settings</strong> → scroll to <strong>"Your apps"</strong> → click <code>&lt;/&gt;</code> Web icon → Register app → copy the <code>firebaseConfig</code> object</div></div>
+      <div class="setup-step"><div class="step-num">4</div><div class="step-text">Paste the entire <code>firebaseConfig = { ... }</code> block below (or just the JSON object inside it)</div></div>
+    </div>
+    <textarea class="config-textarea" id="firebase-config-input" placeholder='Paste your firebaseConfig here...'></textarea>
+    <div class="config-err" id="config-err">⚠ Invalid config — make sure it includes <code>databaseURL</code> and <code>apiKey</code></div>
+    <hr class="setup-divider">
+    <p style="font-size:12px;color:var(--muted)"><strong style="color:var(--yellow)">Security note:</strong> After setup, go to Firebase Console → Realtime Database → Rules and update to restrict access.</p>
+    <div class="setup-footer"><button class="btn-primary" onclick="applyFirebaseConfig()">Connect to Firebase →</button></div>
+  </div>
+</div>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">ML</div>
+      <h1>Mold Tool Life Monitor</h1>
+      <p>ADI · Press &amp; Mold Division</p>
+      <div id="fb-login-status" style="margin-top:12px;font-family:var(--mono);font-size:13px;color:var(--muted-light);display:flex;align-items:center;justify-content:center;gap:6px">
+        <span id="fb-login-dot" style="width:7px;height:7px;border-radius:50%;background:var(--yellow);display:inline-block;animation:sync-blink 0.8s infinite"></span>
+        <span id="fb-login-text">Connecting to database...</span>
+      </div>
+    </div>
+    <div class="role-selector">
+      <div class="role-card" id="role-admin" onclick="selectRole('admin')">
+        <div class="role-icon">🔐</div>
+        <div class="role-title">Admin</div>
+        <div class="role-desc">Full access — edit limits, upload data, reset components, manage molds</div>
+      </div>
+      <div class="role-card" id="role-user" onclick="selectRole('user')">
+        <div class="role-icon">👁</div>
+        <div class="role-title">User</div>
+        <div class="role-desc">View only — monitor tool life status, search, filter, print &amp; download</div>
+      </div>
+    </div>
+    <div id="admin-form" style="display:none">
+      <label class="form-label">Username</label>
+      <input class="form-input" type="text" id="login-user" placeholder="Enter username" autocomplete="username">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') doAdminLogin()">
+      <div class="login-err" id="login-err">⚠ Incorrect username or password</div>
+      <button class="login-submit" onclick="doAdminLogin()">Login as Admin</button>
+    </div>
+    <div id="user-form" style="display:none">
+      <button class="login-submit user-btn" onclick="doUserLogin()">Continue as User (View Only) →</button>
+    </div>
+    <div class="login-note" id="login-note">Select your role above to continue<br>Admin credentials required for editing</div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">ML</div>
+    <div>
+      <div class="logo-text">Mold Tool Life Monitor</div>
+      <div class="logo-sub">ADI · Press &amp; Mold Division</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="sync-status" id="sync-status" title="Firebase sync status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label" style="color:var(--muted)">Not connected</span>
+    </div>
+    <span id="last-updated">NO DATA LOADED</span>
+    <span id="role-badge-display" class="role-badge admin" style="display:none"></span>
+    <button class="hbtn hbtn-outline" onclick="openHistory()">📋 History</button>
+    <button id="btn-download" class="hbtn hbtn-yellow" onclick="openDownload()">⬇ Download</button>
+    <button class="hbtn hbtn-outline" onclick="openPrintSelect()">🖨 Print</button>
+    <button id="btn-upload" class="hbtn hbtn-primary" onclick="openUpload()">⬆ Upload</button>
+    <button id="btn-save-changes" class="hbtn" onclick="commitAllEdits()" style="display:none;background:var(--green);color:#000;border:1px solid var(--green)">💾 Save</button>
+    <button id="btn-discard-changes" class="hbtn" onclick="discardAllEdits()" style="display:none;background:transparent;border:1px solid var(--red);color:var(--red)">✕</button>
+    <button class="hbtn hbtn-outline" onclick="doLogout()" title="Logout" style="border-color:var(--red);color:var(--red)">⏻</button>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat-cell total" id="stat-cell-all" onclick="statFilter('all')" title="Show all active molds">
+    <div class="stat-icon">🔧</div>
+    <div>
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">Total Active Molds</div>
+    </div>
+    <div class="stat-cell-hint">show all</div>
+  </div>
+  <div class="stat-cell critical" id="stat-cell-critical" onclick="statFilter('critical')" title="Filter: Need Change (≤10% remaining)">
+    <div class="stat-icon">🚨</div>
+    <div>
+      <div class="stat-num" id="stat-critical">0</div>
+      <div class="stat-label">Need Change ≤10%</div>
+    </div>
+    <div class="stat-cell-hint">click to filter</div>
+  </div>
+  <div class="stat-cell warning" id="stat-cell-warning" onclick="statFilter('warning')" title="Filter: Low (11–25% remaining)">
+    <div class="stat-icon">⚠️</div>
+    <div>
+      <div class="stat-num" id="stat-warning">0</div>
+      <div class="stat-label">Low Life 11–25%</div>
+    </div>
+    <div class="stat-cell-hint">click to filter</div>
+  </div>
+  <div class="stat-cell good" id="stat-cell-ok" onclick="statFilter('ok')" title="Filter: Healthy (>25% remaining)">
+    <div class="stat-icon">✅</div>
+    <div>
+      <div class="stat-num" id="stat-ok">0</div>
+      <div class="stat-label">Healthy &gt;25%</div>
+    </div>
+    <div class="stat-cell-hint">click to filter</div>
+  </div>
+  <div class="stat-cell scrap-cell" id="stat-cell-scrap" onclick="statFilter('scrap')" title="Switch to Scrapped tab">
+    <div class="stat-icon">🗑️</div>
+    <div>
+      <div class="stat-num" id="stat-scrap" style="color:var(--muted-light)">0</div>
+      <div class="stat-label">Scrapped Molds</div>
+    </div>
+    <div class="stat-cell-hint">view scrapped</div>
+  </div>
+</div>
+
+<div id="week-bar" style="background:var(--panel);border-bottom:2px solid var(--border);padding:12px 36px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-family:var(--mono);font-size:12px;color:var(--muted-light);text-transform:uppercase;letter-spacing:1px;font-weight:600">Date</span>
+    <span id="week-date" style="font-family:var(--mono);font-size:15px;color:var(--accent);font-weight:600">—</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-family:var(--mono);font-size:12px;color:var(--muted-light);text-transform:uppercase;letter-spacing:1px;font-weight:600">Work Week</span>
+    <span id="week-num" style="font-family:var(--mono);font-size:15px;color:var(--accent);font-weight:600">—</span>
+  </div>
+  <div style="width:1px;height:22px;background:var(--border-strong)"></div>
+  <div id="week-remark" style="font-family:var(--mono);font-size:13px;color:var(--muted-light)">No CSV upload recorded yet</div>
+</div>
+
+<div class="alert-banner" id="alert-banner">
+  <span style="font-size:18px">🚨</span>
+  <span id="alert-text"></span>
+</div>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-box" placeholder="Search Production ID, Mold ID, Type..." id="search-input" oninput="onSearch(this.value)" autocomplete="off">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Clear search">✕</button>
+  </div>
+  <span class="result-count" id="result-count"></span>
+  <select class="filter-select" id="filter-status" onchange="filterMolds()">
+    <option value="all">All Status</option>
+    <option value="critical">Need Change (≤10%)</option>
+    <option value="warning">Low (11–25%)</option>
+    <option value="ok">Healthy (&gt;25%)</option>
+    <option value="nodata">No Limit Set</option>
+  </select>
+  <select class="filter-select" id="filter-type" onchange="filterMolds()">
+    <option value="all">All Types</option>
+    <option value="TSSOP16L">TSSOP16L</option>
+    <option value="TSSOP20L">TSSOP20L</option>
+    <option value="G20">G20</option>
+    <option value="G24">G24</option>
+    <option value="G28">G28</option>
+    <option value="G36/44">G36/44</option>
+    <option value="SOIC-S8-A42">SOIC S8 A42</option>
+    <option value="SOIC-GN16/S8">SOIC GN16/S8</option>
+    <option value="MSOP12/16">MSOP12/16</option>
+    <option value="MSOP8/10-A42">MSOP8/10 A42</option>
+    <option value="MSOP8/10">MSOP8/10</option>
+    <option value="PDIP14/16">PDIP14/16</option>
+    <option value="PDIP8">PDIP8</option>
+    <option value="QFN">QFN</option>
+    <option value="S14N">S14N</option>
+    <option value="S14N/GN20/24">S14N/GN20/24</option>
+    <option value="S16N">S16N</option>
+    <option value="S16W">S16W</option>
+    <option value="S18W">S18W</option>
+    <option value="SO20">SO20</option>
+    <option value="SO24/G36W">SO24/G36W</option>
+    <option value="S8-Expose">S8 Expose</option>
+    <option value="SIP-LGA0.7">SIP LGA0.7</option>
+    <option value="SIP-LGA1.2">SIP LGA1.2</option>
+    <option value="SIP-LGA1.5">SIP LGA1.5</option>
+    <option value="SIP-LGA2.0">SIP LGA2.0</option>
+    <option value="SIP-LGA2.5">SIP LGA2.5</option>
+    <option value="SIP-LGA4.0">SIP LGA4.0</option>
+    <option value="TSOT23">TSOT23</option>
+    <option value="TO/DD">TO/DD</option>
+  </select>
+  <div class="toolbar-right">
+    <button class="hbtn hbtn-outline" onclick="expandAll()">Expand All</button>
+    <button class="hbtn hbtn-outline" onclick="collapseAll()">Collapse All</button>
+    <button class="hbtn hbtn-green" onclick="openAddMold()">+ Add Mold</button>
+  </div>
+</div>
+
+<div class="main-tab-bar">
+  <button class="main-tab-btn active" id="main-tab-active" onclick="switchMainTab('active')">
+    ⚙ Active / On Production
+    <span class="main-tab-count" id="main-tab-active-count">0</span>
+  </button>
+  <button class="main-tab-btn scrap-tab" id="main-tab-scrap" onclick="switchMainTab('scrap')">
+    🗑 Scrapped
+    <span class="main-tab-count" id="main-tab-scrap-count">0</span>
+  </button>
+</div>
+
+<div class="print-header" id="print-header">
+  <h1>Mold Tool Life Monitoring Report</h1>
+  <p id="print-date"></p>
+</div>
+
+<div class="main" id="mold-list">
+  <div class="empty-state"><div style="font-size:48px;margin-bottom:16px">🔥</div><h3>Connecting to Firebase...</h3><p style="color:var(--muted);margin-top:8px">Please wait while data loads</p></div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-overlay" id="upload-modal">
+  <div class="modal">
+    <h3>Upload Production Data</h3>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:6px">Daily Qty (Pcs) will be <strong>accumulated</strong> into each matching Mold Die.</p>
+    <p style="font-family:var(--mono);font-size:12px;color:var(--accent);margin-bottom:14px">Required columns: New Name · Old Name · Qty (Pcs)</p>
+    <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-end;flex-wrap:wrap">
+      <div>
+        <label class="form-label">Work Week</label>
+        <input class="form-input" id="upload-week" placeholder="e.g. W08" style="width:100px" autocomplete="off">
+      </div>
+      <div>
+        <label class="form-label">Year</label>
+        <input class="form-input" id="upload-year" type="number" placeholder="2026" style="width:90px" autocomplete="off">
+      </div>
+    </div>
+    <div class="upload-area" id="drop-zone"
+      onclick="document.getElementById('file-input').click()"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="handleDrop(event)">
+      <div style="font-size:36px">📂</div>
+      <p>Tap to browse or drag &amp; drop</p>
+      <p style="font-size:12px;margin-top:6px">.xlsx · .xls · .csv</p>
+    </div>
+    <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFile(this.files[0])">
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('upload-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MOLD MODAL -->
+<div class="modal-overlay" id="add-mold-modal">
+  <div class="modal">
+    <h3>Add New Mold Die</h3>
+    <div class="form-row">
+      <label class="form-label">New Name (Mold Die ID)</label>
+      <input class="form-input" id="new-mold-id" placeholder="e.g. S90890MB1_TSSOP16L">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Old Name</label>
+      <input class="form-input" id="new-mold-old" placeholder="e.g. AM ETSSOP16 1">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Mold Type</label>
+      <input class="form-input" id="new-mold-type" placeholder="e.g. TSSOP16, TSSOP20, G20">
+    </div>
+    <div class="form-row">
+      <label class="form-label">🏷 Production ID <span style="font-weight:400;font-size:11px;color:var(--muted-light);text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input class="form-input" id="new-mold-prod" placeholder="e.g. MD-001, PD-TSSOP-01" style="border-color:rgba(243,156,18,0.35);">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('add-mold-modal')">Cancel</button>
+      <button class="btn-primary" onclick="addMold()">Add Mold Die</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="history-modal">
+  <div class="modal modal-wide">
+    <h3>📋 Full History Log</h3>
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('tab-reset')">🔄 Component Resets</button>
+      <button class="tab-btn" onclick="switchTab('tab-upload')">⬆ Upload Log</button>
+    </div>
+    <div id="tab-reset" class="tab-content active">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:10px">All component events — use the sub-tabs below to filter.</p>
+      <div style="display:flex;gap:3px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:0;overflow-x:auto">
+        <button class="tab-btn active" id="inner-tab-btn-all"    onclick="switchInnerTab('all')"    style="font-size:12px;padding:8px 12px;white-space:nowrap">📋 All</button>
+        <button class="tab-btn"        id="inner-tab-btn-change" onclick="switchInnerTab('change')" style="font-size:12px;padding:8px 12px;white-space:nowrap">🔧 Change Tool</button>
+        <button class="tab-btn"        id="inner-tab-btn-reset"  onclick="switchInnerTab('reset')"  style="font-size:12px;padding:8px 12px;white-space:nowrap">↺ Reset</button>
+        <button class="tab-btn"        id="inner-tab-btn-other"  onclick="switchInnerTab('other')"  style="font-size:12px;padding:8px 12px;white-space:nowrap">🗑 Scrap/Restore</button>
+        <span id="inner-tab-count" style="margin-left:auto;align-self:center;font-family:var(--mono);font-size:11px;color:var(--muted-light);padding-right:6px;white-space:nowrap"></span>
+      </div>
+      <div id="reset-history-body" style="overflow-x:auto"></div>
+      <div class="dl-row">
+        <button class="hbtn hbtn-outline" onclick="downloadHistory('reset','change')">⬇ Change CSV</button>
+        <button class="hbtn hbtn-outline" onclick="downloadHistory('reset','reset')">⬇ Reset CSV</button>
+        <button class="hbtn hbtn-green"   onclick="downloadHistory('reset','all')">⬇ All CSV</button>
+      </div>
+    </div>
+    <div id="tab-upload" class="tab-content">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">Every file upload is logged with date, filename, and molds updated.</p>
+      <div id="upload-history-body" style="overflow-x:auto"></div>
+      <div class="dl-row"><button class="hbtn hbtn-green" onclick="downloadHistory('upload')">⬇ Download CSV</button></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('history-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOWNLOAD MODAL -->
+<div class="modal-overlay" id="download-modal">
+  <div class="modal">
+    <h3>⬇ Download Data</h3>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:18px">Choose what to download. All files are in CSV format.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:4px">📊 Current Tool Status</div><div style="font-size:12px;color:var(--text-dim)">All mold dies with current used qty, limit, % remaining</div></div>
+        <button class="hbtn hbtn-green" onclick="downloadCurrentStatus()">Download</button>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:4px">🔄 Reset History</div><div style="font-size:12px;color:var(--text-dim)">All replacement events with date, mold ID, component</div></div>
+        <button class="hbtn hbtn-green" onclick="downloadHistory('reset')">Download</button>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:4px">⬆ Upload Log</div><div style="font-size:12px;color:var(--text-dim)">All file uploads with date, filename</div></div>
+        <button class="hbtn hbtn-green" onclick="downloadHistory('upload')">Download</button>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:4px">💾 Full Backup (JSON)</div><div style="font-size:12px;color:var(--text-dim)">Complete data backup for restore</div></div>
+        <button class="hbtn hbtn-yellow" onclick="downloadBackup()">Download</button>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px;">
+        <div style="font-weight:600;font-size:13px;margin-bottom:6px">📥 Restore from Backup</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">Upload a previously downloaded JSON backup to restore all data</div>
+        <button class="hbtn hbtn-outline" onclick="document.getElementById('restore-input').click()">Choose Backup File (.json)</button>
+        <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreBackup(this.files[0])">
+      </div>
+      <div style="background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:14px;">
+        <div style="font-weight:600;font-size:13px;margin-bottom:6px;color:var(--accent)">🔥 Firebase Config</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">Change or update your Firebase database connection</div>
+        <button class="hbtn hbtn-outline" onclick="closeModal('download-modal');showSetupOverlay()">Update Firebase Config</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('download-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT SELECTION MODAL -->
+<div class="modal-overlay" id="print-select-modal">
+  <div class="modal modal-wide">
+    <h3>🖨 Print — Select Mold Dies</h3>
+    <div class="print-sel-toolbar">
+      <button class="hbtn hbtn-outline" onclick="printSelAll(true)">☑ All</button>
+      <button class="hbtn hbtn-outline" onclick="printSelAll(false)">☐ None</button>
+      <button class="hbtn hbtn-outline" onclick="printSelFiltered()">☑ Filtered</button>
+      <input type="text" class="search-box" style="width:160px;padding:7px 12px 7px 12px"
+        placeholder="Filter..." id="print-search" oninput="renderPrintList()" autocomplete="off">
+      <span class="print-sel-count" id="print-sel-count">0 selected</span>
+    </div>
+    <div class="print-list" id="print-list"></div>
+    <div class="modal-footer" style="margin-top:12px">
+      <button class="btn-secondary" onclick="closeModal('print-select-modal')">Cancel</button>
+      <button class="btn-primary" onclick="doPrint()" id="print-go-btn">🖨 Print Selected</button>
+    </div>
+  </div>
+</div>
+
+<div id="print-output"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  FIREBASE INTEGRATION
+// ══════════════════════════════════════════════════════
+var firebaseApp = null;
+var db = null;
+var moldsRef = null;
+var uploadLogRef = null;
+var fbUnsubscribeMolds = null;
+var fbUnsubscribeUpload = null;
+var CONFIG_KEY = 'mold-firebase-config-v1';
+
+function setSyncStatus(state, label) {
+  var dot = document.getElementById('sync-dot');
+  var lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+  lbl.style.color = state === 'connected' ? 'var(--green)' : state === 'syncing' ? 'var(--yellow)' : state === 'error' ? 'var(--red)' : 'var(--muted)';
+}
+
+function showSetupOverlay() {
+  document.getElementById('setup-overlay').classList.remove('hidden');
+  var saved = localStorage.getItem(CONFIG_KEY);
+  if (saved) { try { document.getElementById('firebase-config-input').value = JSON.stringify(JSON.parse(saved), null, 2); } catch(e) {} }
+}
+
+function applyFirebaseConfig() {
+  var raw = document.getElementById('firebase-config-input').value.trim();
+  var errEl = document.getElementById('config-err');
+  errEl.classList.remove('show');
+  var match = raw.match(/\{[\s\S]*\}/);
+  if (!match) { errEl.classList.add('show'); return; }
+  var block = match[0];
+  block = block.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":');
+  block = block.replace(/,\s*([\]}])/g, '$1');
+  var config;
+  try { config = JSON.parse(block); } catch(e) { errEl.textContent = '⚠ Could not parse config: ' + e.message; errEl.classList.add('show'); return; }
+  if (!config.apiKey || !config.databaseURL) { errEl.textContent = '⚠ Invalid config — make sure it includes `databaseURL` and `apiKey`'; errEl.classList.add('show'); return; }
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+  document.getElementById('setup-overlay').classList.add('hidden');
+  initFirebase(config);
+}
+
+function initFirebase(config) {
+  try {
+    if (fbUnsubscribeMolds) { fbUnsubscribeMolds(); fbUnsubscribeMolds = null; }
+    if (fbUnsubscribeUpload) { fbUnsubscribeUpload(); fbUnsubscribeUpload = null; }
+    if (firebaseApp) { try { firebaseApp.delete(); } catch(e) {} }
+    setSyncStatus('syncing', 'Connecting...');
+    firebaseApp = firebase.initializeApp(config, 'moldapp-' + Date.now());
+    db = firebaseApp.database();
+    moldsRef = db.ref('molds');
+    uploadLogRef = db.ref('uploadLog');
+    fbUnsubscribeUpload = uploadLogRef.on('value', function(snap) {
+      var data = snap.val();
+      uploadLog = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+      uploadLog = uploadLog.filter(function(u) { return u && u.date; });
+    });
+    db.ref('weekInfo').on('value', function(snap) { var wi = snap.val(); if(wi){ weekInfo = wi; } updateWeekBar(); });
+    db.ref('.info/connected').on('value', function(snap) {
+      if (snap.val() === true) {
+        setSyncStatus('connected', 'Live sync ✓');
+        var dot = document.getElementById('fb-login-dot'); var txt = document.getElementById('fb-login-text');
+        if(dot){ dot.style.background='var(--green)'; dot.style.animation='none'; }
+        if(txt){ txt.style.color='var(--green)'; txt.textContent='Database connected ✓'; }
+      } else { setSyncStatus('syncing', 'Reconnecting...'); }
+    });
+    fbUnsubscribeMolds = moldsRef.on('value', function(snap) {
+      var data = snap.val();
+      if (data) {
+        if (Array.isArray(data)) { molds = data; } else { molds = Object.values(data); }
+        molds = molds.filter(function(m) { return m && m.id; });
+        molds.forEach(function(m) { if (!m.components) m.components = []; m.components.forEach(function(c) { if (!c.resetHistory) c.resetHistory = []; }); });
+      } else { molds = getDefaultData(); moldsRef.set(molds); }
+      if (uploadLog.length > 0) { var last = uploadLog[uploadLog.length - 1]; document.getElementById('last-updated').textContent = 'LAST: ' + fmtDate(last.date); }
+      if (currentRole) render();
+    }, function(err) { setSyncStatus('error', 'Sync error'); showToast('Firebase error: ' + err.message, true); });
+  } catch(e) { setSyncStatus('error', 'Error'); showToast('Firebase init failed: ' + e.message, true); }
+}
+
+var saveTimer = null;
+function saveAll() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function() {
+    if (!moldsRef) {
+      try { localStorage.setItem('mold-v7-molds', JSON.stringify(molds)); localStorage.setItem('mold-v7-uploads', JSON.stringify(uploadLog)); } catch(e) {}
+      return;
+    }
+    setSyncStatus('syncing', 'Saving...');
+    moldsRef.set(molds).then(function() { setSyncStatus('connected', 'Live sync ✓'); }).catch(function(err) { setSyncStatus('error', 'Save failed'); showToast('Save failed: ' + err.message, true); });
+    if (uploadLog.length > 0) { uploadLogRef.set(uploadLog).catch(function(err) { console.error('Upload log save failed:', err); }); }
+  }, 300);
+}
+
+// ══════════════════════════════════════════════════════
+//  APP STATE
+// ══════════════════════════════════════════════════════
+var pendingEdits = {};
+var weekInfo = {};
+var molds = [];
+var uploadLog = [];
+var activeTab = 'tab-reset';
+var currentMainTab = 'active';
+
+function getISOWeek(d){
+  var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var day = date.getUTCDay()||7;
+  date.setUTCDate(date.getUTCDate()+4-day);
+  var yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date-yearStart)/86400000)+1)/7);
+}
+
+function updateWeekBar(){
+  var now = new Date();
+  var wn = getISOWeek(now);
+  var weekStr = 'W'+String(wn).padStart(2,'0')+' / '+now.getFullYear();
+  var dateStr = now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  var wd = document.getElementById('week-date'); if(wd) wd.textContent = dateStr;
+  var wn2 = document.getElementById('week-num'); if(wn2) wn2.textContent = weekStr;
+  var wr = document.getElementById('week-remark');
+  if(wr){
+    if(weekInfo && weekInfo.week){ wr.innerHTML = '📂 Last CSV: <strong style="color:var(--accent)">'+esc(weekInfo.week)+' / '+esc(String(weekInfo.year||''))+'</strong> · '+fmtDate(weekInfo.uploadDate)+(weekInfo.filename?' · '+esc(weekInfo.filename):''); }
+    else { wr.textContent = 'No CSV upload recorded yet'; }
+  }
+}
+
+function markPendingEdit(moldId, ci, oldVal, newVal){
+  var key = moldId+'|'+ci;
+  if(!pendingEdits[key]) pendingEdits[key] = {moldId:moldId, ci:ci, oldVal:oldVal};
+  pendingEdits[key].newVal = newVal;
+  if(pendingEdits[key].oldVal === pendingEdits[key].newVal) delete pendingEdits[key];
+  refreshSaveBtns();
+}
+
+function refreshSaveBtns(){
+  var n = Object.keys(pendingEdits).length;
+  var bs = document.getElementById('btn-save-changes'); var bd = document.getElementById('btn-discard-changes');
+  if(currentRole !== 'admin') return;
+  if(bs) bs.style.display = n>0?'inline-block':'none';
+  if(bd) bd.style.display = n>0?'inline-block':'none';
+  if(n>0 && bs) bs.textContent = '💾 Save ('+n+')';
+}
+
+function commitAllEdits(){
+  var n = Object.keys(pendingEdits).length; if(n === 0){ showToast('No pending changes'); return; }
+  Object.values(pendingEdits).forEach(function(e){ var m=findMold(e.moldId); if(!m||!m.components[e.ci]) return; m.components[e.ci].used=e.newVal; });
+  pendingEdits = {}; refreshSaveBtns(); saveAll(); render(); showToast('All changes saved to database ✓');
+}
+
+function discardAllEdits(){
+  var n = Object.keys(pendingEdits).length; if(n === 0) return;
+  if(!confirm('Discard '+n+' unsaved edit'+(n>1?'s':'')+' and revert to saved values?')) return;
+  pendingEdits = {}; refreshSaveBtns(); render(); showToast('Changes discarded — values reverted');
+}
+
+function getPendingVal(moldId, ci){ var key=moldId+'|'+ci; return pendingEdits[key]!==undefined?pendingEdits[key].newVal:null; }
+
+var DEFAULT_COMPONENTS = [
+  {name:'CAVITY STRIP BTM',limit:51800000},{name:'CAVITY STRIP TOP',limit:51800000},
+  {name:'CENTER STRIP TOP',limit:51800000},{name:'EJECTOR PIN TOP/BTM',limit:51800000},
+  {name:'SLEEVE STRIP',limit:51800000},{name:'CENTER/LOCATION PIN',limit:25900000},
+  {name:'DIE-SPRING',limit:25900000},{name:'GUIDE BLOCK',limit:22300000},
+  {name:'PLUNGER',limit:11610000},{name:'SLEEVE/POT',limit:11610000}
+];
+var toastTimer = null;
+
+function buildDefaultMold(id, oldName, type, qty) {
+  return { id:id, old:oldName||id, prodId:'', type:type||'General', expanded:false,
+    components: DEFAULT_COMPONENTS.map(function(dc) { return {name:dc.name,limit:dc.limit,used:qty||0,resetHistory:[]}; })
+  };
+}
+
+function getDefaultData() {
+  var raw = [
+    ['S90890MB1_TSSOP16L','AM ETSSOP16 1','TSSOP16L',0],['S90890MB2_TSSOP16L','AM ETSSOP16 2','TSSOP16L',0],
+    ['S90890MB3_TSSOP16L','AM ETSSOP16 3','TSSOP16L',0],['S90890MB4_TSSOP16L','AM ETSSOP16 4','TSSOP16L',0],
+    ['G20LD_MB1_CU','AM G20 1','G20',0],['G20LD_MB2_CU','AM G20 2','G20',0],
+    ['SCRAP_G36_44_1','AM G36/44 1','G36/44',0],['G_36/44LD_MB2_CU','AM G36/44 2','G36/44',0],
+  ];
+  return raw.map(function(r){ return buildDefaultMold(r[0],r[1],r[2],r[3]); });
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function escId(s){ return String(s).replace(/[^a-zA-Z0-9]/g,'-'); }
+function fmtDate(iso){ var d=new Date(iso); return d.toLocaleDateString()+' '+d.toLocaleTimeString(); }
+function fmtNum(n){ return Number(n).toLocaleString(); }
+function getPct(used, limit){ if(!limit||limit<=0) return null; return Math.max(0,Math.min(100,((limit-used)/limit)*100)); }
+function getStatus(pct){ if(pct===null) return 'nodata'; if(pct<=10) return 'critical'; if(pct<=25) return 'warning'; return 'ok'; }
+function getBarClass(pct){ if(pct===null||pct>25) return 'green'; if(pct<=10) return 'red'; return 'yellow'; }
+function getMoldWorstStatus(mold){
+  var order={critical:0,warning:1,ok:2,nodata:3}, worst='nodata';
+  mold.components.forEach(function(c){ var s=getStatus(getPct(c.used,c.limit)); if(order[s]<order[worst]) worst=s; });
+  return worst;
+}
+function findMold(id){ for(var i=0;i<molds.length;i++){ if(molds[i].id===id) return molds[i]; } return null; }
+function nowISO(){ return new Date().toISOString(); }
+function isScrapMold(m){ return m.scrapped===true||m.id.toUpperCase().startsWith('SCRAP'); }
+
+function switchMainTab(tab) {
+  currentMainTab = tab;
+  document.getElementById('main-tab-active').classList.toggle('active', tab === 'active');
+  document.getElementById('main-tab-scrap').classList.toggle('active', tab === 'scrap');
+  filterMolds();
+}
+
+function statFilter(statusVal) {
+  if (statusVal === 'scrap') {
+    switchMainTab('scrap');
+    document.getElementById('filter-status').value = 'all';
+    updateStatCellHighlight('scrap');
+    return;
+  }
+  if (currentMainTab !== 'active') switchMainTab('active');
+  var fs = document.getElementById('filter-status');
+  if (fs.value === statusVal && statusVal !== 'all') {
+    fs.value = 'all';
+    updateStatCellHighlight('all');
+  } else {
+    fs.value = statusVal;
+    updateStatCellHighlight(statusVal);
+  }
+  filterMolds();
+}
+
+function updateStatCellHighlight(val) {
+  var ids = ['stat-cell-all','stat-cell-critical','stat-cell-warning','stat-cell-ok','stat-cell-scrap'];
+  ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.remove('active-filter'); });
+  var map = {all:'stat-cell-all',critical:'stat-cell-critical',warning:'stat-cell-warning',ok:'stat-cell-ok',scrap:'stat-cell-scrap'};
+  if(map[val]){ var el=document.getElementById(map[val]); if(el) el.classList.add('active-filter'); }
+}
+
+function render(){ updateStats(); updateAlerts(); filterMolds(); updateWeekBar(); refreshSaveBtns(); }
+
+function updateStats(){
+  var total=0,critical=0,warning=0,ok=0,scrap=0;
+  molds.forEach(function(m){
+    if(isScrapMold(m)){ scrap++; return; }
+    total++; var s=getMoldWorstStatus(m);
+    if(s==='critical') critical++; else if(s==='warning') warning++; else if(s==='ok') ok++;
+  });
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-critical').textContent=critical;
+  document.getElementById('stat-warning').textContent=warning;
+  document.getElementById('stat-ok').textContent=ok;
+  document.getElementById('stat-scrap').textContent=scrap;
+  var at=document.getElementById('main-tab-active-count'); if(at) at.textContent=total;
+  var st=document.getElementById('main-tab-scrap-count'); if(st) st.textContent=scrap;
+}
+
+function updateAlerts(){
+  var crits=molds.filter(function(m){ return !isScrapMold(m) && getMoldWorstStatus(m)==='critical'; });
+  var b=document.getElementById('alert-banner');
+  if(crits.length>0){ b.classList.add('visible'); document.getElementById('alert-text').textContent=crits.length+' Mold Die(s) need immediate attention: '+crits.map(function(m){ return m.id; }).join(', '); }
+  else { b.classList.remove('visible'); }
+}
+
+function onSearch(val){ var btn=document.getElementById('search-clear'); if(btn) btn.classList.toggle('visible',val.length>0); filterMolds(); }
+function clearSearch(){ var inp=document.getElementById('search-input'); if(inp){ inp.value=''; inp.focus(); } var btn=document.getElementById('search-clear'); if(btn) btn.classList.remove('visible'); filterMolds(); }
+
+function filterMolds(){
+  var search=document.getElementById('search-input').value.toLowerCase().trim();
+  var status=document.getElementById('filter-status').value;
+  var typeFilter=document.getElementById('filter-type').value;
+  updateStatCellHighlight(currentMainTab === 'scrap' ? 'scrap' : status);
+  var filtered=molds.filter(function(m){
+    var scrap=isScrapMold(m);
+    if(currentMainTab === 'active' && scrap) return false;
+    if(currentMainTab === 'scrap' && !scrap) return false;
+    var pid=(m.prodId||'').toLowerCase();
+    var ms=!search||pid.indexOf(search)>=0||m.id.toLowerCase().indexOf(search)>=0||m.old.toLowerCase().indexOf(search)>=0||m.type.toLowerCase().indexOf(search)>=0;
+    var ss=status==='all'||getMoldWorstStatus(m)===status;
+    var ts=typeFilter==='all'||m.type===typeFilter;
+    return ms&&ss&&ts;
+  });
+  var rc=document.getElementById('result-count');
+  if(rc){
+    var total=molds.filter(function(m){ return currentMainTab==='active'?!isScrapMold(m):isScrapMold(m); }).length;
+    if(search||status!=='all'||typeFilter!=='all'){ rc.innerHTML='Showing <span>'+filtered.length+'</span> of '+total+(currentMainTab==='scrap'?' scrapped':' active')+' molds'; }
+    else { rc.innerHTML='<span>'+total+'</span> '+(currentMainTab==='scrap'?'scrapped':'active')+' molds'; }
+  }
+  renderList(filtered, search);
+}
+
+function highlight(text, search){
+  if(!search||search.length<1) return esc(text);
+  var idx=text.toLowerCase().indexOf(search.toLowerCase()); if(idx<0) return esc(text);
+  return esc(text.slice(0,idx))+'<span class="match-highlight">'+esc(text.slice(idx,idx+search.length))+'</span>'+esc(text.slice(idx+search.length));
+}
+
+var _currentSearch='';
+function renderList(list, search){
+  _currentSearch=search||'';
+  var c=document.getElementById('mold-list');
+  if(list.length===0){
+    var emptyMsg=currentMainTab==='scrap'
+      ? '<div class="empty-state"><div style="font-size:48px;margin-bottom:16px">🗑</div><h3>No Scrapped Molds</h3><p>Molds you mark as SCRAP will appear here.</p></div>'
+      : '<div class="empty-state"><div style="font-size:48px;margin-bottom:16px">🔍</div><h3>No Mold Dies Found</h3><p>Try a different search term or clear your filters.</p>'+(search?'<button class="hbtn hbtn-outline" style="margin-top:12px" onclick="clearSearch()">✕ Clear Search</button>':'')+'</div>';
+    c.innerHTML=emptyMsg;
+    return;
+  }
+  var html='';
+  if(currentMainTab==='scrap'){
+    html+='<div class="scrap-section-banner">🗑 <strong>'+list.length+' Scrapped Mold Die'+(list.length!==1?'s':'')+'</strong> — No longer in active production. Admins can restore them using the ♻ button.</div>';
+  }
+  html+=list.map(renderMoldCard).join('');
+  c.innerHTML=html;
+}
+
+function renderMoldCard(m){
+  var worst=getMoldWorstStatus(m);
+  var scrap=isScrapMold(m);
+  var cardCls=scrap?'scrap-card':worst==='critical'?'critical-card':worst==='warning'?'warning-card':'';
+  var expCls=m.expanded?'expanded':'';
+  var firstComp=null; for(var i=0;i<m.components.length;i++){ if(m.components[i].limit){ firstComp=m.components[i]; break; } }
+  var miniPct=firstComp?getPct(firstComp.used,firstComp.limit):null;
+  var scrapDateHtml=scrap&&m.scrappedDate?'<span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:4px">since '+fmtDate(m.scrappedDate)+'</span>':'';
+  var badgeHtml=scrap?'<span class="badge badge-scrap">🗑 SCRAP</span>'+scrapDateHtml
+    :worst==='critical'?'<span class="badge badge-critical">⚠ CHANGE</span>'
+    :worst==='warning'?'<span class="badge badge-warning">LOW</span>'
+    :worst==='ok'?'<span class="badge badge-ok">OK</span>'
+    :'<span class="badge" style="color:var(--muted);border:1px solid var(--border)">NO LIMIT</span>';
+  var totalUsed=m.components.length>0?m.components[0].used:0;
+  var sid=escAttr(m.id);
+  return '<div class="mold-card '+cardCls+' '+expCls+'" id="card-'+escId(m.id)+'">'
+    +'<div class="mold-header" onclick="toggleExpand(\''+sid+'\')">'
+      +'<div class="expand-toggle">'+(m.expanded?'▼':'▶')+'</div>'
+      +'<div class="mold-name-row">'
+        +'<span class="mold-name-label">New Name</span>'
+        +'<span class="mold-name">'+highlight(m.id,_currentSearch)+'</span>'
+      +'</div>'
+      +'<div class="mold-oldname-row">'
+        +'<span class="mold-oldname-label">Old Name</span>'
+        +'<span class="mold-oldname">'+highlight(m.old,_currentSearch)+'</span>'
+      +'</div>'
+      +(m.prodId?'<div class="prod-id-badge"><span class="prod-id-badge-label">Prod&nbsp;ID</span>'+hlProd(m.prodId,_currentSearch)+'</div>':'<div class="prod-id-none">No Prod ID</div>')
+      +'<div style="font-family:var(--mono);font-size:13px;color:var(--muted-light);min-width:90px;font-weight:500">Used: <span style="color:var(--text-strong);font-weight:600">'+fmtNum(totalUsed)+'</span></div>'
+      +'<div style="font-family:var(--mono);font-size:13px;color:var(--muted-light);min-width:80px">'+highlight(m.type,_currentSearch)+'</div>'
+      +'<div class="mini-bar-wrap"><div class="mini-bar-bg"><div class="mini-bar-fill '+getBarClass(miniPct)+'" style="width:'+(miniPct!==null?miniPct:0)+'%"></div></div>'
+        +'<div style="font-family:var(--mono);font-size:12px;color:var(--muted-light);margin-top:4px">'+(miniPct!==null?miniPct.toFixed(1)+'% rem.':'—')+'</div></div>'
+      +badgeHtml
+      +'<div class="mold-actions" onclick="event.stopPropagation()">'
+        +'<button class="icon-btn" title="View history" onclick="openCompHistory(\''+sid+'\')">📋</button>'
+        +(currentRole==='admin'
+          ? (scrap
+              ? '<button class="icon-btn" title="Unscrap — restore this mold die" onclick="unscrapMold(\''+sid+'\')" style="border-color:var(--green);color:var(--green)">♻</button>'
+              : '<button class="icon-btn" title="Mark as Scrap" onclick="scrapMold(\''+sid+'\')" style="border-color:var(--yellow);color:var(--yellow)">🗑</button>')
+          : '')
+        +(currentRole==='admin' ? '<button class="icon-btn danger" title="Delete mold permanently" onclick="deleteMold(\''+sid+'\')">✕</button>' : '')
+      +'</div>'
+    +'</div>'
+    +'<div class="components-panel">'
+      +'<div class="comp-grid comp-head"><span>Component</span><span>Life Remaining</span><span>Current Used</span><span>Tool Limit</span><span>'+(currentRole==='user'?'Remaining (Qty)':'% Rem.')+'</span><span>'+(currentRole==='admin'?'Actions':'')+'</span><span></span><span>Remarks</span></div>'
+      +m.components.map(function(c,ci){ return renderCompRow(m.id,c,ci); }).join('')
+      +(currentRole==='admin'
+        ?'<div class="prod-id-section">'
+          +'<span class="prod-id-section-label">🏷 Production ID</span>'
+          +'<input class="prod-id-field" id="pid-'+escId(m.id)+'" value="'+esc(m.prodId||'')+'" placeholder="e.g. MD-001, PD-T16-01" onkeydown="if(event.key===\'Enter\')saveProdId(\''+sid+'\')">'
+          +'<button class="prod-id-save" onclick="saveProdId(\''+sid+'\')" title="Save Production ID">Save</button>'
+          +(m.prodId?'<button class="prod-id-clear" onclick="clearProdId(\''+sid+'\')" title="Clear Production ID">✕ Clear</button>':'')
+          +'</div>'
+        :'')
+      +(currentRole==='admin'&&!scrap
+        ?'<div class="add-comp-row"><input class="new-comp-input" id="nc-'+escId(m.id)+'" placeholder="New component name..."><button class="btn-add-comp" onclick="addComponent(\''+sid+'\')">+ Add</button></div>'
+        :'')
+    +'</div>'
+  +'</div>';
+}
+
+function renderCompRow(moldId, comp, ci){
+  var pending=getPendingVal(moldId,ci);
+  var displayUsed=(pending!==null)?pending:comp.used;
+  var pct=getPct(displayUsed,comp.limit);
+  var pctDisplay=pct!==null?pct.toFixed(1)+'%':'—';
+  var barWidth=pct!==null?(100-pct):0;
+  var pctColor=pct===null?'var(--muted)':pct<=10?'var(--red)':pct<=25?'var(--yellow)':'var(--green)';
+  var isUser=(currentRole==='user');
+  var remQty=(pct!==null&&comp.limit)?Math.max(0,comp.limit-displayUsed):null;
+  var remQtyDisplay=remQty!==null?fmtNum(remQty)+' pcs':'—';
+  var remarks=pct!==null&&pct<=10?'<span class="remarks-change">⚠ NEED TO CHANGE</span>':pct!==null?'<span class="remarks-ok">✓ OK</span>':'<span style="color:var(--muted)">—</span>';
+  var sid=escAttr(moldId);
+  var histCount=comp.resetHistory?comp.resetHistory.length:0;
+  var delBtn=isUser?'':'<button class="icon-btn danger" style="width:18px;height:18px;font-size:9px" onclick="deleteComponent(\''+sid+'\','+ci+')">✕</button>';
+  var limitCell=isUser?'<div class="current-meter" style="color:var(--muted)">'+(comp.limit?fmtNum(comp.limit):'—')+'</div>':'<input class="num-input" type="number" min="0" value="'+(comp.limit||'')+'" placeholder="Set limit..." onchange="setLimit(\''+sid+'\','+ci+',this.value)" onfocus="this.select()">';
+  var pctCell=isUser?'<div style="font-family:var(--mono);font-size:12px;font-weight:600;color:'+pctColor+'">'+remQtyDisplay+'</div>':'<div style="font-family:var(--mono);font-size:13px;font-weight:600;color:'+pctColor+'">'+pctDisplay+'</div>';
+  var editedCls=(pending!==null)?' pending-edit':'';
+  var usedCell=isUser?'<div class="current-meter">'+fmtNum(displayUsed)+'</div>':'<input class="num-input'+editedCls+'" type="number" min="0" value="'+(displayUsed||0)+'" title="Edit current used qty" onchange="setUsed(\''+sid+'\','+ci+',this.value,this)" onfocus="this.select()">';
+  var resetCell=isUser?'<div></div>':'<button class="reset-btn" onclick="resetComponent(\''+sid+'\','+ci+')" title="Reset counter to 0">Reset</button>';
+  var changeCell=isUser?'<div></div>':'<button class="change-tool-btn" onclick="changeToolComponent(\''+sid+'\','+ci+')" title="Record tool replacement">Change</button>';
+  return '<div class="comp-grid comp-row">'
+    +'<div style="display:flex;align-items:center;gap:5px"><span class="comp-name">'+esc(comp.name)+'</span>'+(histCount>0?'<span style="font-family:var(--mono);font-size:11px;color:var(--accent);background:rgba(56,182,255,0.12);padding:2px 7px;border-radius:8px">'+histCount+'x</span>':'')+delBtn+'</div>'
+    +'<div class="prog-wrap"><div class="prog-bg"><div class="prog-fill '+getBarClass(pct)+'" style="width:'+barWidth+'%"></div><div class="prog-pct">'+pctDisplay+' rem.</div></div></div>'
+    +usedCell+limitCell+pctCell
+    +'<div style="display:flex;flex-direction:column;gap:2px">'+resetCell+changeCell+'</div>'
+    +'<div class="remarks-cell">'+remarks+'</div>'
+  +'</div>';
+}
+
+function toggleExpand(moldId){ var m=findMold(moldId); if(m){ m.expanded=!m.expanded; saveAll(); render(); } }
+function expandAll(){ molds.forEach(function(m){ if(currentMainTab==='active'?!isScrapMold(m):isScrapMold(m)) m.expanded=true; }); saveAll(); render(); }
+function collapseAll(){ molds.forEach(function(m){ if(currentMainTab==='active'?!isScrapMold(m):isScrapMold(m)) m.expanded=false; }); saveAll(); render(); }
+function setLimit(moldId, ci, val){ var m=findMold(moldId); if(!m) return; m.components[ci].limit=parseFloat(val)||null; saveAll(); render(); showToast('Limit set for '+m.components[ci].name); }
+function setUsed(moldId, ci, val, inputEl){
+  var m=findMold(moldId); if(!m) return;
+  var newVal=parseFloat(val); if(isNaN(newVal)||newVal<0){ showToast('Invalid value',true); return; }
+  var comp=m.components[ci]; var oldVal=comp.used;
+  markPendingEdit(moldId,ci,oldVal,newVal);
+  if(inputEl){ inputEl.classList.toggle('pending-edit',getPendingVal(moldId,ci)!==null); }
+}
+function resetComponent(moldId, ci){
+  var m=findMold(moldId); if(!m) return; var comp=m.components[ci];
+  if(!confirm('Reset "'+comp.name+'" on '+moldId+'?\n\nThis records the counter reset to 0 and logs it in history.')) return;
+  if(!comp.resetHistory) comp.resetHistory=[];
+  var wn=getISOWeek(new Date()); var workWeek='W'+String(wn).padStart(2,'0')+'/'+new Date().getFullYear();
+  comp.resetHistory.push({date:nowISO(),workWeek:workWeek,type:'reset',moldId:moldId,moldOld:m.old,component:comp.name,usedAtReset:comp.used,limit:comp.limit});
+  comp.used=0; delete pendingEdits[moldId+'|'+ci]; refreshSaveBtns(); saveAll(); render(); showToast(comp.name+' counter reset and logged ✓');
+}
+function changeToolComponent(moldId, ci){
+  var m=findMold(moldId); if(!m) return; var comp=m.components[ci];
+  var reason=prompt('Change Tool: "'+comp.name+'" on '+moldId+'\n\nEnter reason/notes (optional):');
+  if(reason===null) return;
+  if(!comp.resetHistory) comp.resetHistory=[];
+  var wn=getISOWeek(new Date()); var workWeek='W'+String(wn).padStart(2,'0')+'/'+new Date().getFullYear();
+  comp.resetHistory.push({date:nowISO(),workWeek:workWeek,type:'change',moldId:moldId,moldOld:m.old,component:comp.name,usedAtChange:comp.used,limit:comp.limit,notes:reason||''});
+  comp.used=0; delete pendingEdits[moldId+'|'+ci]; refreshSaveBtns(); saveAll(); render(); showToast('🔧 Tool changed & logged: '+comp.name+' ✓');
+}
+function addComponent(moldId){
+  var input=document.getElementById('nc-'+escId(moldId)); if(!input) return;
+  var name=input.value.trim(); if(!name){ showToast('Enter a component name',true); return; }
+  var m=findMold(moldId); if(!m) return;
+  var limitVal=prompt('Set Tool Limit for "'+name+'" (enter number, e.g. 11610000):');
+  var limit=parseFloat(limitVal)||null;
+  m.components.push({name:name,limit:limit,used:m.components.length>0?m.components[0].used:0,resetHistory:[]});
+  input.value=''; saveAll(); render(); showToast('Component "'+name+'" added'+(limit?' with limit '+fmtNum(limit):''));
+}
+function deleteComponent(moldId, ci){
+  var m=findMold(moldId); if(!m) return;
+  if(m.components.length<=1){ showToast('Must keep at least one component',true); return; }
+  if(!confirm('Delete "'+m.components[ci].name+'"?')) return;
+  m.components.splice(ci,1); saveAll(); render();
+}
+function deleteMold(moldId){
+  if(!confirm('Delete Mold Die "'+moldId+'" and ALL its data?\n\nThis cannot be undone.')) return;
+  for(var i=0;i<molds.length;i++){ if(molds[i].id===moldId){ molds.splice(i,1); break; } }
+  saveAll(); render(); showToast(moldId+' deleted');
+}
+function scrapMold(moldId){
+  var m=findMold(moldId); if(!m) return;
+  var reason=prompt('Mark "'+moldId+'" as SCRAP?\n\nEnter scrapping reason/notes (optional):');
+  if(reason===null) return;
+  m.scrapped=true; m.scrappedDate=nowISO(); m.scrappedReason=reason||'';
+  var wn=getISOWeek(new Date()); var workWeek='W'+String(wn).padStart(2,'0')+'/'+new Date().getFullYear();
+  m.components.forEach(function(c){
+    if(!c.resetHistory) c.resetHistory=[];
+    c.resetHistory.push({date:nowISO(),workWeek:workWeek,type:'scrap',moldId:moldId,moldOld:m.old,component:c.name,usedAtReset:c.used,limit:c.limit,notes:'SCRAPPED'+(reason?' — '+reason:'')});
+  });
+  saveAll(); render(); showToast('🗑 '+moldId+' moved to Scrapped tab');
+}
+function unscrapMold(moldId){
+  var m=findMold(moldId); if(!m) return;
+  if(!confirm('Restore "'+moldId+'" from SCRAP and make it active again?')) return;
+  m.scrapped=false; delete m.scrappedDate; delete m.scrappedReason;
+  var wn=getISOWeek(new Date()); var workWeek='W'+String(wn).padStart(2,'0')+'/'+new Date().getFullYear();
+  m.components.forEach(function(c){
+    if(!c.resetHistory) c.resetHistory=[];
+    c.resetHistory.push({date:nowISO(),workWeek:workWeek,type:'unscrap',moldId:moldId,moldOld:m.old,component:c.name,usedAtReset:c.used,limit:c.limit,notes:'RESTORED FROM SCRAP'});
+  });
+  switchMainTab('active'); saveAll(); render(); showToast('♻ '+moldId+' restored to Active tab ✓');
+}
+function hlProd(text, search){
+  if(!search||!text) return esc(text||'');
+  var idx=text.toLowerCase().indexOf(search.toLowerCase());
+  if(idx<0) return esc(text);
+  return esc(text.slice(0,idx))+'<span class="prod-id-hl">'+esc(text.slice(idx,idx+search.length))+'</span>'+esc(text.slice(idx+search.length));
+}
+function saveProdId(moldId){
+  var m=findMold(moldId); if(!m) return;
+  var el=document.getElementById('pid-'+escId(moldId)); if(!el) return;
+  var val=el.value.trim();
+  m.prodId=val; saveAll(); render();
+  showToast(val?'Production ID saved: '+val+' ✓':'Production ID cleared');
+}
+function clearProdId(moldId){
+  var m=findMold(moldId); if(!m) return;
+  if(!confirm('Clear Production ID for '+moldId+'?')) return;
+  m.prodId=''; saveAll(); render(); showToast('Production ID cleared');
+}
+
+function addMold(){
+  var id=document.getElementById('new-mold-id').value.trim();
+  var old=document.getElementById('new-mold-old').value.trim();
+  var type=document.getElementById('new-mold-type').value.trim();
+  var prod=(document.getElementById('new-mold-prod')||{}).value||''; prod=prod.trim();
+  if(!id){ showToast('Mold Die ID is required',true); return; }
+  if(findMold(id)){ showToast('ID already exists',true); return; }
+  var nm=buildDefaultMold(id,old,type,0); nm.prodId=prod;
+  molds.push(nm); saveAll(); render();
+  closeModal('add-mold-modal');
+  document.getElementById('new-mold-id').value='';
+  document.getElementById('new-mold-old').value='';
+  document.getElementById('new-mold-type').value='';
+  if(document.getElementById('new-mold-prod')) document.getElementById('new-mold-prod').value='';
+  showToast(id+(prod?' [ProdID: '+prod+']':'')+' added ✓');
+}
+
+function openUpload(){
+  if(currentRole!=='admin'){ showToast('Upload requires Admin access',true); return; }
+  var now=new Date(); var wn=getISOWeek(now);
+  var wi=document.getElementById('upload-week'); if(wi) wi.value='W'+String(wn).padStart(2,'0');
+  var yi=document.getElementById('upload-year'); if(yi) yi.value=now.getFullYear();
+  document.getElementById('upload-modal').classList.add('active');
+}
+function handleDrop(e){ e.preventDefault(); document.getElementById('drop-zone').classList.remove('drag-over'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }
+function handleFile(file){
+  if(!file) return;
+  var weekVal=(document.getElementById('upload-week')||{}).value||'';
+  var yearVal=(document.getElementById('upload-year')||{}).value||'';
+  var ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='csv'){ var r=new FileReader(); r.onload=function(e){ processCSV(e.target.result,file.name,weekVal,yearVal); }; r.readAsText(file); }
+  else if(ext==='xlsx'||ext==='xls'){ var r2=new FileReader(); r2.onload=function(e){ var wb=XLSX.read(e.target.result,{type:'array'}); processCSV(XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]]),file.name,weekVal,yearVal); }; r2.readAsArrayBuffer(file); }
+  else { showToast('Unsupported file type',true); }
+}
+function processCSV(text, filename, weekVal, yearVal){
+  var lines=text.trim().split('\n');
+  if(lines.length<2){ showToast('File empty or invalid',true); return; }
+  var headers=lines[0].split(',').map(function(h){ return h.replace(/"/g,'').trim().toLowerCase(); });
+  var nameCol=-1,qtyCol=-1,oldCol=-1,prodIdCol=-1;
+  for(var h=0;h<headers.length;h++){
+    if(headers[h].indexOf('new name')>=0||headers[h]==='new_name') nameCol=h;
+    if(headers[h].indexOf('old name')>=0||headers[h]==='old_name') oldCol=h;
+    if(headers[h].indexOf('qty')>=0||headers[h].indexOf('pcs')>=0) qtyCol=h;
+    if(headers[h].indexOf('prod')>=0&&(headers[h].indexOf('id')>=0||headers[h].indexOf('no')>=0)) prodIdCol=h;
+  }
+  if(nameCol<0){ showToast('Cannot find "New Name" column',true); return; }
+  if(qtyCol<0){ showToast('Cannot find "Qty" column',true); return; }
+  var updated=0,newAdded=0,affected=[];
+  for(var i=1;i<lines.length;i++){
+    var cols=parseCSVLine(lines[i]);
+    if(cols.length<=Math.max(nameCol,qtyCol)) continue;
+    var id=cols[nameCol].replace(/"/g,'').trim(); var qty=parseFloat(cols[qtyCol].replace(/"/g,'').replace(/,/g,'').trim())||0;
+    if(!id) continue;
+    var m=findMold(id);
+    if(!m){ var oldName=oldCol>=0?cols[oldCol].replace(/"/g,'').trim():id; m=buildDefaultMold(id,oldName,'Imported',0);
+      if(prodIdCol>=0&&cols[prodIdCol]) m.prodId=cols[prodIdCol].replace(/"/g,'').trim();
+      molds.push(m); newAdded++;
+    } else if(prodIdCol>=0&&cols[prodIdCol]&&!m.prodId){ m.prodId=cols[prodIdCol].replace(/"/g,'').trim(); }
+    if(qty>0){ m.components.forEach(function(c){ c.used+=qty; }); updated++; affected.push(id); }
+  }
+  uploadLog.push({date:nowISO(),filename:filename,updated:updated,added:newAdded,affected:affected.join('; ')});
+  document.getElementById('last-updated').textContent='LAST: '+new Date().toLocaleString();
+  if(weekVal||yearVal){
+    weekInfo={week:weekVal||'—',year:yearVal||new Date().getFullYear(),uploadDate:nowISO(),filename:filename};
+    if(db) db.ref('weekInfo').set(weekInfo);
+    updateWeekBar();
+  }
+  pendingEdits={}; refreshSaveBtns();
+  saveAll(); closeModal('upload-modal'); render();
+  showToast('Updated '+updated+' mold(s)'+(newAdded?', +'+newAdded+' new':'')+' ✓');
+  document.getElementById('file-input').value='';
+}
+function parseCSVLine(line){
+  var result=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    if(line[i]==='"'){ inQ=!inQ; } else if(line[i]===','&&!inQ){ result.push(cur); cur=''; } else { cur+=line[i]; }
+  }
+  result.push(cur); return result;
+}
+
+function openHistory(){ renderHistoryTabs(); document.getElementById('history-modal').classList.add('active'); }
+function switchTab(tabId){
+  activeTab=tabId;
+  document.querySelectorAll('.tab-btn').forEach(function(b,i){ b.classList.toggle('active',['tab-reset','tab-upload'][i]===tabId); });
+  document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.toggle('active',c.id===tabId); });
+}
+
+var _innerHistTab = 'all';
+var _allResetsCache = [];
+
+function switchInnerTab(type) {
+  _innerHistTab = type;
+  ['all','change','reset','other'].forEach(function(t) {
+    var btn = document.getElementById('inner-tab-btn-' + t);
+    if (btn) btn.classList.toggle('active', t === type);
+  });
+  renderInnerHistoryTable(_allResetsCache);
+}
+
+function renderInnerHistoryTable(allResets) {
+  var filter = _innerHistTab;
+  var filtered = allResets.filter(function(r) {
+    if (filter === 'all')    return true;
+    if (filter === 'change') return r.type === 'change';
+    if (filter === 'reset')  return r.type === 'reset';
+    return r.type !== 'change' && r.type !== 'reset';
+  });
+  var countEl = document.getElementById('inner-tab-count');
+  if (countEl) countEl.textContent = filtered.length + ' event' + (filtered.length !== 1 ? 's' : '');
+  var rb = document.getElementById('reset-history-body');
+  if (filtered.length === 0) {
+    var labels = { all:'events', change:'tool change records', reset:'reset records', other:'scrap/restore events' };
+    rb.innerHTML = '<div class="hist-empty">No ' + (labels[filter] || 'events') + ' recorded yet.</div>';
+    return;
+  }
+  var typeStyles = {
+    change:  { icon:'🔧', label:'CHANGE TOOL', color:'var(--accent)',      bg:'rgba(56,182,255,0.10)',  border:'rgba(56,182,255,0.30)' },
+    reset:   { icon:'↺',  label:'RESET',       color:'var(--yellow)',      bg:'rgba(243,156,18,0.10)', border:'rgba(243,156,18,0.30)' },
+    scrap:   { icon:'🗑',  label:'SCRAP',       color:'var(--muted-light)', bg:'rgba(107,130,160,0.10)',border:'rgba(107,130,160,0.25)' },
+    unscrap: { icon:'♻',  label:'RESTORED',    color:'var(--green)',       bg:'rgba(46,204,113,0.10)', border:'rgba(46,204,113,0.30)' }
+  };
+  var html = '<table class="hist-table"><thead><tr>'
+    + '<th>Date/Time</th><th>Work Week</th><th>Event</th>'
+    + '<th>Mold Die ID</th><th>Old Name</th><th>Component</th>'
+    + '<th style="text-align:right">Used at Event</th><th style="text-align:right">Limit</th><th>Notes</th>'
+    + '</tr></thead><tbody>';
+  filtered.forEach(function(r) {
+    var s = typeStyles[r.type] || { icon:'•', label:(r.type||'EVENT').toUpperCase(), color:'var(--text-dim)', bg:'transparent', border:'transparent' };
+    var badge = '<span style="display:inline-flex;align-items:center;gap:5px;background:' + s.bg + ';border:1.5px solid ' + s.border + ';border-radius:4px;padding:3px 9px;font-size:11px;font-weight:700;color:' + s.color + ';font-family:var(--mono);white-space:nowrap;letter-spacing:0.4px">' + s.icon + ' ' + s.label + '</span>';
+    html += '<tr>'
+      + '<td style="white-space:nowrap">' + fmtDate(r.date) + '</td>'
+      + '<td style="color:var(--accent);font-family:var(--mono)">' + esc(r.workWeek) + '</td>'
+      + '<td>' + badge + '</td>'
+      + '<td style="color:var(--accent);font-family:var(--mono);font-size:12px">' + esc(r.moldId) + '</td>'
+      + '<td style="color:var(--text-dim)">' + esc(r.moldOld || '') + '</td>'
+      + '<td style="font-family:var(--mono);font-size:12px">' + esc(r.component) + '</td>'
+      + '<td style="font-family:var(--mono);text-align:right">' + fmtNum(r.usedAtReset) + '</td>'
+      + '<td style="font-family:var(--mono);text-align:right">' + (r.limit ? fmtNum(r.limit) : '—') + '</td>'
+      + '<td style="color:var(--muted-light);font-size:12px">' + esc(r.notes || '') + '</td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  rb.innerHTML = html;
+}
+
+function renderHistoryTabs() {
+  var allResets = [];
+  molds.forEach(function(m) {
+    m.components.forEach(function(c) {
+      if (c.resetHistory && c.resetHistory.length) {
+        c.resetHistory.forEach(function(r) {
+          allResets.push({date:r.date,workWeek:r.workWeek||'—',type:r.type||'reset',moldId:r.moldId||m.id,moldOld:r.moldOld||m.old,component:r.component||c.name,usedAtReset:r.usedAtReset||r.usedAtChange||0,limit:r.limit,notes:r.notes||''});
+        });
+      }
+    });
+  });
+  allResets.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+  _allResetsCache = allResets;
+  _innerHistTab = 'all';
+  ['all','change','reset','other'].forEach(function(t) {
+    var btn = document.getElementById('inner-tab-btn-' + t);
+    if (btn) btn.classList.toggle('active', t === 'all');
+  });
+  renderInnerHistoryTable(allResets);
+  var ub = document.getElementById('upload-history-body');
+  if (uploadLog.length === 0) {
+    ub.innerHTML = '<div class="hist-empty">No uploads recorded yet.</div>';
+  } else {
+    var sorted = [].concat(uploadLog).reverse();
+    var uhtml = '<table class="hist-table"><thead><tr><th>Date/Time</th><th>Filename</th><th>Molds Updated</th><th>New Added</th><th>Affected IDs</th></tr></thead><tbody>';
+    sorted.forEach(function(u) {
+      uhtml += '<tr><td>' + fmtDate(u.date) + '</td><td style="color:var(--accent)">' + esc(u.filename) + '</td><td>' + u.updated + '</td><td>' + u.added + '</td><td style="font-size:11px;max-width:200px">' + esc(u.affected) + '</td></tr>';
+    });
+    uhtml += '</tbody></table>';
+    ub.innerHTML = uhtml;
+  }
+}
+function openCompHistory(moldId){ openHistory(); switchTab('tab-reset'); }
+
+function openDownload(){ document.getElementById('download-modal').classList.add('active'); }
+function csvEscape(v){ var s=String(v===null||v===undefined?'':v); if(s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0) s='"'+s.replace(/"/g,'""')+'"'; return s; }
+function buildCSV(headers,rows){ var lines=[headers.map(csvEscape).join(',')]; rows.forEach(function(r){ lines.push(r.map(csvEscape).join(',')); }); return lines.join('\r\n'); }
+function downloadCSV(csv,filename){ var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(function(){ URL.revokeObjectURL(url); },1000); }
+function downloadCurrentStatus(){
+  var headers=['Mold Die ID','Old Name','Production ID','Type','Scrapped','Component','Current Used (Pcs)','Max Limit (Pcs)','% Remaining','Status','Remarks','Reset Count'];
+  var rows=[]; molds.forEach(function(m){ m.components.forEach(function(c){ var pct=getPct(c.used,c.limit); var status=getStatus(pct); var remarks=pct!==null&&pct<=10?'NEED TO CHANGE':pct!==null?'OK':'No Limit Set'; rows.push([m.id,m.old,m.prodId||'',m.type,isScrapMold(m)?'SCRAP':'Active',c.name,c.used,c.limit||'',pct!==null?pct.toFixed(2)+'%':'',status.toUpperCase(),remarks,c.resetHistory?c.resetHistory.length:0]); }); });
+  downloadCSV(buildCSV(headers,rows),'ToolLifeStatus_'+new Date().toISOString().slice(0,10)+'.csv'); showToast('Current status downloaded ✓');
+}
+function downloadHistory(type, subtype) {
+  var ts = new Date().toISOString().slice(0,10);
+  if (type === 'reset') {
+    var allResets = [];
+    molds.forEach(function(m) {
+      m.components.forEach(function(c) {
+        if (c.resetHistory && c.resetHistory.length) {
+          c.resetHistory.forEach(function(r) {
+            allResets.push([fmtDate(r.date), r.workWeek||'—', r.type||'reset', r.moldId||m.id, r.moldOld||m.old, r.component||c.name, r.usedAtReset||r.usedAtChange||0, r.limit||'', r.notes||'']);
+          });
+        }
+      });
+    });
+    var filtered = allResets;
+    var suffix = 'AllEvents';
+    if (subtype === 'change') { filtered = allResets.filter(function(r){ return r[2]==='change'; }); suffix = 'ChangeTool'; }
+    else if (subtype === 'reset') { filtered = allResets.filter(function(r){ return r[2]==='reset'; }); suffix = 'Resets'; }
+    downloadCSV(buildCSV(['Date/Time','Work Week','Event Type','Mold Die ID','Old Name','Component','Used at Event (Pcs)','Max Limit (Pcs)','Notes'], filtered), 'ToolLife_History_' + suffix + '_' + ts + '.csv');
+    showToast('Downloaded: ' + suffix + ' CSV ✓');
+  } else {
+    var urows = uploadLog.slice().reverse().map(function(u) { return [fmtDate(u.date), u.filename, u.updated, u.added, u.affected]; });
+    downloadCSV(buildCSV(['Date/Time','Filename','Molds Updated','New Molds Added','Affected Mold IDs'], urows), 'ToolLife_UploadLog_' + ts + '.csv');
+    showToast('Upload log downloaded ✓');
+  }
+}
+function downloadBackup(){
+  var backup={version:7,exportDate:nowISO(),molds:molds,uploadLog:uploadLog};
+  var blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob); var a=document.createElement('a');
+  a.href=url; a.download='ToolLifeBackup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1000); showToast('Backup downloaded ✓');
+}
+function restoreBackup(file){
+  if(!file) return;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data.molds||!Array.isArray(data.molds)) throw new Error('Invalid backup format');
+      if(!confirm('Restore backup from '+fmtDate(data.exportDate)+'?\n\nThis will REPLACE all current data in Firebase for ALL users.')) return;
+      molds=data.molds; uploadLog=data.uploadLog||[];
+      saveAll(); render(); closeModal('download-modal'); showToast('Backup restored to Firebase ✓');
+    } catch(ex){ showToast('Invalid backup file: '+ex.message,true); }
+  };
+  r.readAsText(file); document.getElementById('restore-input').value='';
+}
+
+var printSelected={};
+function openPrintSelect(){
+  printSelected={};
+  var search=document.getElementById('search-input').value.toLowerCase().trim();
+  var status=document.getElementById('filter-status').value;
+  var typeFilter=document.getElementById('filter-type').value;
+  molds.forEach(function(m){
+    var ms=!search||(m.prodId||'').toLowerCase().indexOf(search)>=0||m.id.toLowerCase().indexOf(search)>=0||m.old.toLowerCase().indexOf(search)>=0||m.type.toLowerCase().indexOf(search)>=0;
+    var ss=status==='all'||getMoldWorstStatus(m)===status;
+    var scrap=isScrapMold(m);
+    var ts=typeFilter==='all'||m.type===typeFilter;
+    printSelected[m.id]=ms&&ss&&ts&&(currentMainTab==='scrap'?scrap:!scrap);
+  });
+  document.getElementById('print-search').value='';
+  renderPrintList(); document.getElementById('print-select-modal').classList.add('active');
+}
+function renderPrintList(){
+  var q=(document.getElementById('print-search').value||'').toLowerCase().trim();
+  var list=document.getElementById('print-list'); var count=0;
+  var groups={};
+  molds.forEach(function(m){
+    if(q&&m.id.toLowerCase().indexOf(q)<0&&m.old.toLowerCase().indexOf(q)<0&&m.type.toLowerCase().indexOf(q)<0) return;
+    var key=(isScrapMold(m)?'🗑 SCRAPPED — ':'')+m.type;
+    if(!groups[key]) groups[key]=[];
+    groups[key].push(m);
+  });
+  var html=''; var types=Object.keys(groups).sort();
+  types.forEach(function(type){
+    html+='<div class="print-group-header">'+esc(type)+' ('+groups[type].length+')</div>';
+    groups[type].forEach(function(m){
+      var scrap=isScrapMold(m); var worst=getMoldWorstStatus(m);
+      var chk=printSelected[m.id]?'checked':''; if(printSelected[m.id]) count++;
+      var badgeTxt=scrap?'🗑':worst==='critical'?'⚠':worst==='warning'?'▼':'';
+      html+='<label class="print-list-item'+(printSelected[m.id]?' checked':'')+'" onclick="togglePrintSel(\''+escAttr(m.id)+'\',this)">'
+        +'<input type="checkbox" '+chk+' onclick="event.stopPropagation();togglePrintSel(\''+escAttr(m.id)+'\',this.parentElement)" onchange="event.stopPropagation()">'
+        +'<span class="print-item-id">'+esc(m.id)+'</span>'
+        +(m.prodId?'<span class="print-item-type" style="background:rgba(243,156,18,0.15);color:#f39c12;border:1px solid rgba(243,156,18,0.4);">'+esc(m.prodId)+'</span>':'')
+        +'<span class="print-item-old">'+esc(m.old)+'</span>'
+        +'<span class="print-item-type">'+esc(m.type)+'</span>'+(badgeTxt?'<span>'+badgeTxt+'</span>':'')+'</label>';
+    });
+  });
+  if(html==='') html='<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">No molds match your filter.</div>';
+  list.innerHTML=html; updatePrintCount();
+}
+function togglePrintSel(moldId,el){ printSelected[moldId]=!printSelected[moldId]; var cb=el.querySelector('input[type=checkbox]'); if(cb) cb.checked=printSelected[moldId]; el.classList.toggle('checked',printSelected[moldId]); updatePrintCount(); }
+function updatePrintCount(){ var n=Object.values(printSelected).filter(Boolean).length; var btn=document.getElementById('print-go-btn'); document.getElementById('print-sel-count').textContent=n+' selected'; if(btn) btn.disabled=(n===0); }
+function printSelAll(val){ var q=(document.getElementById('print-search').value||'').toLowerCase().trim(); molds.forEach(function(m){ if(q&&m.id.toLowerCase().indexOf(q)<0&&m.old.toLowerCase().indexOf(q)<0&&m.type.toLowerCase().indexOf(q)<0) return; printSelected[m.id]=val; }); renderPrintList(); }
+function printSelFiltered(){
+  var search=document.getElementById('search-input').value.toLowerCase().trim(); var status=document.getElementById('filter-status').value; var typeFilter=document.getElementById('filter-type').value;
+  Object.keys(printSelected).forEach(function(id){ printSelected[id]=false; });
+  molds.forEach(function(m){
+    var ms=!search||(m.prodId||'').toLowerCase().indexOf(search)>=0||m.id.toLowerCase().indexOf(search)>=0||m.old.toLowerCase().indexOf(search)>=0||m.type.toLowerCase().indexOf(search)>=0;
+    var ss=status==='all'||getMoldWorstStatus(m)===status; var scrap=isScrapMold(m);
+    var ts=typeFilter==='all'||m.type===typeFilter;
+    if(ms&&ss&&ts) printSelected[m.id]=true;
+  }); renderPrintList();
+}
+function doPrint(){
+  var ids=Object.keys(printSelected).filter(function(id){ return printSelected[id]; });
+  if(ids.length===0){ showToast('No molds selected',true); return; }
+  var selectedMolds=molds.filter(function(m){ return printSelected[m.id]; });
+  var now=new Date().toLocaleString();
+  var html='<div class="po-header"><h1>Mold Tool Life Monitoring Report</h1><p>Printed: '+now+' &nbsp;|&nbsp; Selected: '+selectedMolds.length+' Mold Die(s)</p></div>';
+  selectedMolds.forEach(function(m){
+    var scrap=isScrapMold(m); var worst=getMoldWorstStatus(m);
+    var cardCls='po-card'+(scrap?' po-scrap':worst==='critical'?' po-critical':worst==='warning'?' po-warning':'');
+    var badgeHtml=scrap?'<span class="po-badge po-badge-scrap">🗑 SCRAP</span>':worst==='critical'?'<span class="po-badge po-badge-critical">⚠ CHANGE</span>':worst==='warning'?'<span class="po-badge po-badge-warning">LOW</span>':worst==='ok'?'<span class="po-badge po-badge-ok">OK</span>':'';
+    var totalUsed=m.components.length>0?m.components[0].used:0;
+    html+='<div class="'+cardCls+'"><div class="po-card-head"><span class="po-mold-id">'+esc(m.id)+'</span>'+(m.prodId?'<span class="po-mold-type" style="background:#fff3cd;color:#856404;border:1px solid #f0ad4e">ProdID: '+esc(m.prodId)+'</span>':'')+'<span class="po-mold-old">'+esc(m.old)+'</span><span class="po-mold-type">'+esc(m.type)+'</span><span style="font-size:11px;font-family:monospace;color:#555">Used: '+fmtNum(totalUsed)+'</span>'+badgeHtml+'</div>';
+    html+='<table class="po-table"><thead><tr><th>Component</th><th>Progress</th><th>Current Used</th><th>Tool Limit</th><th>Remaining (Qty)</th><th>Remarks</th></tr></thead><tbody>';
+    m.components.forEach(function(c){
+      var pct=getPct(c.used,c.limit); var remQty=(pct!==null&&c.limit)?Math.max(0,c.limit-c.used):null;
+      var barW=pct!==null?Math.round(100-pct):0; var barCls=pct===null?'po-bar-green':pct<=10?'po-bar-red':pct<=25?'po-bar-yellow':'po-bar-green';
+      var pctTxt=pct!==null?pct.toFixed(1)+'% rem.':'—'; var remarksTxt=pct!==null&&pct<=10?'NEED TO CHANGE':pct!==null?'OK':'No Limit'; var remarksCls=pct!==null&&pct<=10?'po-td-need':'po-td-ok';
+      var histCount=c.resetHistory?c.resetHistory.length:0;
+      html+='<tr><td>'+esc(c.name)+(histCount>0?' <span style="color:#999;font-size:11px">(reset '+histCount+'x)</span>':'')+'</td><td><div style="display:flex;align-items:center;gap:4px"><div class="po-bar-wrap"><div class="po-bar-fill '+barCls+'" style="width:'+barW+'%"></div></div><span style="font-size:10px">'+pctTxt+'</span></div></td><td>'+fmtNum(c.used)+'</td><td>'+(c.limit?fmtNum(c.limit):'—')+'</td><td>'+(remQty!==null?fmtNum(remQty)+' pcs':'—')+'</td><td class="'+remarksCls+'">'+remarksTxt+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+  });
+  html+='<div class="po-summary">Generated by Mold Tool Life Monitor &nbsp;|&nbsp; '+now+'</div>';
+  var po=document.getElementById('print-output'); po.innerHTML=html; po.style.display='block';
+  var style=document.createElement('style'); style.id='print-temp-style'; style.textContent='@media print{body>*:not(#print-output){display:none!important;}#print-output{display:block!important;font-family:Arial,sans-serif;padding:16px;}}'; document.head.appendChild(style);
+  closeModal('print-select-modal');
+  setTimeout(function(){ window.print(); setTimeout(function(){ po.style.display='none'; po.innerHTML=''; var s=document.getElementById('print-temp-style'); if(s) s.remove(); },500); },200);
+}
+
+function openAddMold(){ document.getElementById('add-mold-modal').classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(function(el){ el.addEventListener('click',function(e){ if(e.target===el) el.classList.remove('active'); }); });
+
+function showToast(msg, isError){ var t=document.getElementById('toast'); t.textContent=msg; t.className='toast'+(isError?' error':'')+' show'; clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.remove('show'); },3000); }
+
+var ADMIN_USER='moldtooling'; var ADMIN_PASS='moldEOL123'; var currentRole=null; var selectedRole=null;
+
+document.addEventListener('keydown',function(e){
+  if(currentRole===null) return;
+  var inp=document.getElementById('search-input'); if(!inp) return;
+  if(e.key==='/'&&document.activeElement!==inp&&document.activeElement.tagName!=='INPUT'){ e.preventDefault(); inp.focus(); inp.select(); }
+  if(e.key==='Escape'&&document.activeElement===inp){ clearSearch(); inp.blur(); }
+});
+
+function selectRole(role){
+  selectedRole=role;
+  document.getElementById('role-admin').classList.toggle('selected',role==='admin');
+  document.getElementById('role-user').classList.toggle('selected',role==='user');
+  document.getElementById('admin-form').style.display=role==='admin'?'block':'none';
+  document.getElementById('user-form').style.display=role==='user'?'block':'none';
+  document.getElementById('login-note').textContent=role==='admin'?'Enter admin credentials to continue':'Click the button below to enter as view-only user';
+  if(role==='admin') setTimeout(function(){ document.getElementById('login-user').focus(); },100);
+  document.getElementById('login-err').classList.remove('show');
+}
+
+function doAdminLogin(){
+  var u=document.getElementById('login-user').value.trim(); var p=document.getElementById('login-pass').value;
+  if(u===ADMIN_USER&&p===ADMIN_PASS){ enterApp('admin'); }
+  else {
+    var err=document.getElementById('login-err'); err.classList.add('show');
+    document.getElementById('login-pass').value=''; document.getElementById('login-pass').focus();
+    var form=document.getElementById('admin-form'); form.style.animation='none'; setTimeout(function(){ form.style.animation='shake 0.4s ease'; },10);
+  }
+}
+function doUserLogin(){ enterApp('user'); }
+function enterApp(role){
+  currentRole=role;
+  document.getElementById('login-screen').classList.add('hidden');
+  document.body.classList.toggle('user-mode',role==='user');
+  document.body.classList.toggle('admin-mode',role==='admin');
+  var badge=document.getElementById('role-badge-display'); badge.style.display='inline-block'; badge.textContent=role==='admin'?'🔐 Admin':'👁 View Only'; badge.className='role-badge '+role;
+  updateWeekBar(); refreshSaveBtns(); render();
+}
+function doLogout(){
+  if(Object.keys(pendingEdits).length>0){ if(!confirm('You have unsaved changes. Discard them and log out?')) return; }
+  else { if(!confirm('Log out and return to the login screen?')) return; }
+  pendingEdits={}; currentRole=null; selectedRole=null;
+  document.getElementById('login-user').value=''; document.getElementById('login-pass').value='';
+  document.getElementById('login-err').classList.remove('show');
+  document.getElementById('admin-form').style.display='none'; document.getElementById('user-form').style.display='none';
+  document.getElementById('role-admin').classList.remove('selected'); document.getElementById('role-user').classList.remove('selected');
+  document.getElementById('login-note').textContent='Select your role above to continue';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('role-badge-display').style.display='none';
+  document.body.classList.remove('user-mode','admin-mode');
+  var bs=document.getElementById('btn-save-changes'); if(bs) bs.style.display='none';
+  var bd=document.getElementById('btn-discard-changes'); if(bd) bd.style.display='none';
+}
+
+(function(){ var s=document.createElement('style'); s.textContent='@keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-8px);}40%,80%{transform:translateX(8px);}}'; document.head.appendChild(s); })();
+
+var EMBEDDED_CONFIG = {
+  apiKey: "AIzaSyDrkKt3OS2Wo1wplW4sLcrbp9D2_7p8otA",
+  authDomain: "tool-life-monitoring-system.firebaseapp.com",
+  databaseURL: "https://tool-life-monitoring-system-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tool-life-monitoring-system",
+  storageBucket: "tool-life-monitoring-system.firebasestorage.app",
+  messagingSenderId: "397903119099",
+  appId: "1:397903119099:web:712473276c92566c22a65e",
+  measurementId: "G-9LXMKDTJ3C"
+};
+
+(function(){
+  document.getElementById('setup-overlay').classList.add('hidden');
+  updateWeekBar();
+  initFirebase(EMBEDDED_CONFIG);
+})();
+</script>
+</body>
+</html>
