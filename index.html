@@ -50,7 +50,6 @@
     -webkit-font-smoothing:antialiased;
   }
 
-  /* ══ HEADER ══ */
   header{
     background:rgba(13,17,23,0.97);
     border-bottom:2px solid var(--border);
@@ -102,7 +101,6 @@
   @keyframes sync-pulse{0%,100%{opacity:1;}50%{opacity:0.45;}}
   @keyframes sync-blink{0%,100%{opacity:1;}50%{opacity:0.2;}}
 
-  /* ══ FIREBASE CONFIG SETUP MODAL ══ */
   .setup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:10000;
     display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
   .setup-overlay.hidden{display:none;}
@@ -131,7 +129,6 @@
   .setup-footer{display:flex;gap:12px;justify-content:flex-end;margin-top:20px;}
   .setup-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
 
-  /* ══ STATS BAR ══ */
   .stats-bar{display:flex;gap:2px;background:var(--bg);border-bottom:2px solid var(--border);}
   .stat-cell{flex:1;background:var(--panel);padding:20px 28px;
     display:flex;align-items:center;gap:16px;
@@ -154,7 +151,6 @@
   .stat-cell.good .stat-num{color:var(--green);}
   .stat-cell.total .stat-num{color:var(--accent);}
 
-  /* ══ TOOLBAR ══ */
   .toolbar{padding:18px 36px;display:flex;align-items:center;gap:12px;
     flex-wrap:wrap;border-bottom:2px solid var(--border);background:var(--panel);}
   .search-wrap{position:relative;display:flex;align-items:center;}
@@ -178,7 +174,6 @@
   .filter-select:focus{outline:none;border-color:var(--accent);}
   .toolbar-right{margin-left:auto;display:flex;gap:10px;}
 
-  /* ══ MAIN TAB BAR ══ */
   .main-tab-bar{display:flex;align-items:center;background:var(--panel);
     border-bottom:2px solid var(--border);padding:0 36px;}
   .main-tab-btn{display:flex;align-items:center;gap:10px;padding:16px 22px;
@@ -193,7 +188,6 @@
   .main-tab-btn.active .main-tab-count{background:rgba(56,182,255,0.15);color:var(--accent);}
   .main-tab-btn.scrap-tab.active .main-tab-count{background:rgba(107,130,160,0.3);color:var(--muted-light);}
 
-  /* ══ ALERT BANNER ══ */
   .main{padding:28px 36px;}
   .alert-banner{display:none;
     background:rgba(231,76,60,0.1);border:2px solid rgba(231,76,60,0.4);
@@ -203,7 +197,6 @@
   @keyframes blink-border{0%,100%{border-color:rgba(231,76,60,0.35);}50%{border-color:rgba(231,76,60,0.75);}}
   .alert-banner.visible{display:flex;}
 
-  /* ══ MOLD CARDS ══ */
   .mold-card{background:var(--card);border:1.5px solid var(--border);border-radius:10px;
     margin-bottom:14px;overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;}
   .mold-card:hover{border-color:var(--border-strong);box-shadow:0 2px 16px rgba(0,0,0,0.3);}
@@ -241,7 +234,6 @@
   .icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
   .icon-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(231,76,60,0.1);}
 
-  /* ══ COMPONENTS PANEL ══ */
   .components-panel{display:none;border-top:2px solid var(--border);
     padding:20px 24px 24px;background:rgba(13,17,23,0.5);}
   .mold-card.expanded .components-panel{display:block;}
@@ -295,7 +287,6 @@
     font-size:var(--fs-base);color:var(--text-dim);}
   .scrap-section-banner strong{color:var(--text);}
 
-  /* ══ MODALS ══ */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);
     z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
   .modal-overlay.active{display:flex;}
@@ -340,6 +331,28 @@
   .tab-content.active{display:block;}
   .dl-row{display:flex;gap:10px;margin-top:16px;justify-content:flex-end;}
 
+  /* ── MOLD FILTER BAR (history) ── */
+  .hist-mold-bar{
+    display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;
+    padding:10px 14px;
+    background:rgba(243,156,18,0.06);
+    border:1.5px solid rgba(243,156,18,0.22);
+    border-radius:7px;
+  }
+  .hist-mold-bar-label{
+    font-family:var(--mono);font-size:11px;color:var(--yellow);
+    text-transform:uppercase;letter-spacing:0.8px;font-weight:700;white-space:nowrap;
+  }
+  #hist-mold-filter{
+    flex:1;min-width:180px;max-width:440px;
+    font-size:12px;padding:7px 10px;
+    border-color:rgba(243,156,18,0.35) !important;
+  }
+  #hist-mold-count{
+    font-family:var(--mono);font-size:11px;color:var(--accent);
+    white-space:nowrap;font-weight:600;
+  }
+
   .empty-state{text-align:center;padding:90px 20px;color:var(--muted-light);}
   .empty-state h3{font-size:var(--fs-xl);margin-bottom:10px;color:var(--text);font-weight:600;}
   .empty-state p{font-size:var(--fs-base);}
@@ -352,7 +365,6 @@
   .toast.show{transform:translateY(0);opacity:1;}
   .toast.error{border-left-color:var(--red);}
 
-  /* ══ LOGIN SCREEN ══ */
   #login-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);
     display:flex;align-items:center;justify-content:center;
     background-image:
@@ -471,7 +483,6 @@
     body{background:#fff !important;color:#000 !important;}
   }
 
-  /* ══ PRODUCTION ID ══ */
   .prod-id-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(243,156,18,0.13);border:1.5px solid rgba(243,156,18,0.4);border-radius:5px;padding:4px 11px;font-family:var(--mono);font-size:var(--fs-sm);color:var(--yellow);font-weight:600;white-space:nowrap;}
   .prod-id-badge-label{font-size:10px;opacity:0.65;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;color:var(--yellow);}
   .prod-id-none{font-family:var(--mono);font-size:12px;color:var(--muted);font-style:italic;}
@@ -486,7 +497,6 @@
   .prod-id-clear:hover{border-color:var(--red);color:var(--red);}
   .prod-id-hl{background:rgba(243,156,18,0.22);color:var(--yellow);border-radius:2px;padding:0 2px;}
 
-  /* ══ LAPTOP (≤1366px) ══ */
   @media (max-width: 1366px) {
     :root { --fs-xs:11px;--fs-sm:12px;--fs-base:13px;--fs-md:14px;--fs-lg:16px;--fs-xl:19px;--fs-2xl:22px;--fs-3xl:26px; }
     header { height:56px; padding:0 20px; }
@@ -528,6 +538,9 @@
     .current-meter { font-size:11px; } .remarks-cell { font-size:10px; }
     .reset-btn, .change-tool-btn { padding:4px 7px; font-size:10px; }
     .components-panel { padding:14px 16px 18px; }
+    .hist-mold-bar { padding:8px 10px; }
+    .hist-mold-bar-label { font-size:10px; }
+    #hist-mold-filter { font-size:11px; }
   }
   @media (max-width: 1200px) { .components-panel { overflow-x:auto; } .comp-grid { min-width:780px; } }
   @media (max-width: 1100px) {
@@ -541,87 +554,36 @@
   }
   .print-header{display:none;}
 
-  /* ══════════════════════════════════════════════════════
-     MOBILE RESPONSIVE — phones (≤768px)
-  ══════════════════════════════════════════════════════ */
-
   @media (max-width: 768px) {
     :root {
       --fs-xs:10px; --fs-sm:11px; --fs-base:12px;
       --fs-md:13px; --fs-lg:14px; --fs-xl:16px;
       --fs-2xl:18px; --fs-3xl:20px;
     }
-  }
-
-  /* HEADER: two-row layout on mobile */
-  @media (max-width: 768px) {
     header {
-      height: auto;
-      padding: 10px 12px;
-      flex-wrap: wrap;
-      gap: 8px;
+      height: auto; padding: 10px 12px; flex-wrap: wrap; gap: 8px;
       position: sticky; top: 0; z-index: 100;
     }
     .logo { flex: 1; }
     .logo-icon { width:30px; height:30px; font-size:11px; }
     .logo-text { font-size:11px; letter-spacing:0.5px; }
     .logo-sub  { font-size:9px; }
-    .header-right {
-      width: 100%;
-      justify-content: flex-start;
-      gap: 5px;
-      flex-wrap: wrap;
-    }
+    .header-right { width: 100%; justify-content: flex-start; gap: 5px; flex-wrap: wrap; }
     .hbtn { padding:6px 8px; font-size:10px; }
     #last-updated, .sync-status span:last-child { display:none; }
     #sync-status { gap:4px; }
     .sync-dot { width:8px; height:8px; }
-    /* keep these buttons visible but compact */
     #btn-upload { order:-1; }
-  }
-
-  /* STATS BAR: 2x2 + 1 full-width */
-  @media (max-width: 768px) {
-    .stats-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2px;
-    }
-    .stat-cell {
-      flex: unset;
-      padding: 10px 12px;
-      gap: 8px;
-      border-bottom: 2px solid transparent;
-      min-width: 0;
-    }
+    .stats-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+    .stat-cell { flex: unset; padding: 10px 12px; gap: 8px; border-bottom: 2px solid transparent; min-width: 0; }
     .stat-cell:last-child { grid-column: 1 / -1; }
-    .stat-icon { font-size:16px; }
-    .stat-num  { font-size:20px; }
-    .stat-label { font-size:9px; margin-top:2px; }
-    .stat-cell-hint { display:none; }
-  }
-
-  /* WEEK BAR */
-  @media (max-width: 768px) {
-    #week-bar {
-      padding: 8px 12px !important;
-      gap: 8px !important;
-      font-size: 10px;
-      flex-wrap: wrap;
-    }
+    .stat-icon { font-size:16px; } .stat-num  { font-size:20px; }
+    .stat-label { font-size:9px; margin-top:2px; } .stat-cell-hint { display:none; }
+    #week-bar { padding: 8px 12px !important; gap: 8px !important; font-size: 10px; flex-wrap: wrap; }
     #week-date, #week-num { font-size:11px !important; }
     #week-remark { font-size:10px; width:100%; }
-    /* hide the divider pipe */
     #week-bar > div[style*="width:1px"] { display:none; }
-  }
-
-  /* ALERT BANNER */
-  @media (max-width: 768px) {
     .alert-banner { margin:8px 12px 0; padding:10px 12px; font-size:10px; gap:8px; }
-  }
-
-  /* TOOLBAR: stack vertically */
-  @media (max-width: 768px) {
     .toolbar { padding:10px 12px; gap:7px; flex-direction:column; align-items:stretch; }
     .search-wrap { width:100%; }
     .search-box { width:100% !important; padding:9px 36px 9px 38px; font-size:12px; box-sizing:border-box; }
@@ -630,71 +592,29 @@
     .toolbar-right { margin-left:0; display:flex; gap:6px; flex-wrap:wrap; }
     .toolbar-right .hbtn { flex:1 1 auto; text-align:center; font-size:11px; padding:8px 6px; }
     .result-count { font-size:10px; }
-  }
-
-  /* MAIN TAB BAR */
-  @media (max-width: 768px) {
     .main-tab-bar { padding:0 12px; }
     .main-tab-btn { padding:10px 10px; font-size:11px; gap:4px; }
     .main-tab-count { font-size:10px; padding:2px 6px; }
-  }
-
-  /* MAIN CONTENT */
-  @media (max-width: 768px) {
     .main { padding:10px 12px; }
-  }
-
-  /* MOLD CARDS */
-  @media (max-width: 768px) {
     .mold-card { margin-bottom:8px; border-radius:7px; }
-    .mold-header {
-      padding: 10px 12px;
-      gap: 6px;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
+    .mold-header { padding: 10px 12px; gap: 6px; flex-wrap: wrap; align-items: flex-start; }
     .expand-toggle { width:20px; height:20px; font-size:10px; margin-top:2px; flex-shrink:0; }
-
-    /* Name fields side by side */
     .mold-name-row { min-width:0; flex:1 1 45%; }
     .mold-oldname-row { min-width:0; flex:1 1 45%; }
     .mold-name { font-size:11px; word-break:break-all; }
     .mold-oldname { font-size:10px; }
     .mold-name-label, .mold-oldname-label { font-size:8px; }
-
-    /* Used count and type inline */
     .mold-header > div[style*="min-width:90px"] { font-size:10px !important; min-width:0 !important; flex:1 1 auto; }
     .mold-header > div[style*="min-width:80px"] { font-size:10px !important; min-width:0 !important; flex:1 1 auto; }
-
-    /* Hide mini bar — too small to be useful */
     .mini-bar-wrap { display:none; }
-
-    /* Badge */
     .badge { font-size:9px; padding:2px 6px; }
-
-    /* Prod ID */
     .prod-id-badge { font-size:10px; padding:2px 7px; }
     .prod-id-badge-label { font-size:8px; }
     .prod-id-none { font-size:9px; }
-
-    /* Action buttons: push to right */
     .mold-actions { margin-left:auto; gap:4px; flex-shrink:0; }
     .icon-btn { width:26px; height:26px; font-size:12px; }
-  }
-
-  /* COMPONENTS PANEL: horizontal scroll */
-  @media (max-width: 768px) {
-    .components-panel {
-      padding: 10px 10px 14px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .comp-grid {
-      min-width: 660px;
-      grid-template-columns: 120px 1fr 95px 95px 75px 70px 70px 110px;
-      gap: 4px;
-      font-size: 10px;
-    }
+    .components-panel { padding: 10px 10px 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .comp-grid { min-width: 660px; grid-template-columns: 120px 1fr 95px 95px 75px 70px 70px 110px; gap: 4px; font-size: 10px; }
     .comp-head span { font-size:9px; letter-spacing:0.2px; }
     .comp-name { font-size:10px; }
     .prog-bg { height:18px; }
@@ -703,20 +623,12 @@
     .current-meter { font-size:10px; }
     .remarks-cell { font-size:9px; }
     .reset-btn, .change-tool-btn { padding:3px 5px; font-size:9px; letter-spacing:0; }
-
-    /* Production ID section */
     .prod-id-section { flex-direction:column; align-items:stretch; gap:8px; padding:10px 12px; }
     .prod-id-field { min-width:0; width:100%; font-size:13px; }
     .prod-id-save, .prod-id-clear { width:100%; text-align:center; }
-
-    /* Add component row */
     .add-comp-row { flex-direction:column; gap:7px; }
     .new-comp-input { width:100%; }
     .btn-add-comp { width:100%; text-align:center; }
-  }
-
-  /* LOGIN SCREEN */
-  @media (max-width: 768px) {
     #login-screen { padding:16px; align-items:flex-start; padding-top:32px; overflow-y:auto; }
     .login-box { width:100%; padding-bottom:24px; }
     .login-logo-icon { width:52px; height:52px; font-size:18px; margin-bottom:12px; }
@@ -732,19 +644,11 @@
     .login-submit { padding:12px; font-size:13px; }
     .login-note { font-size:11px; }
     #fb-login-status { font-size:11px; }
-  }
-
-  /* MODALS: bottom sheet on mobile */
-  @media (max-width: 768px) {
     .modal-overlay { align-items:flex-end; padding:0; }
     .modal, .modal.modal-wide {
-      width: 100%;
-      max-width: 100%;
-      border-radius: 16px 16px 0 0;
-      border-bottom: none;
-      max-height: 88vh;
-      padding: 20px 14px 28px;
-      /* Add safe area for home indicator */
+      width: 100%; max-width: 100%;
+      border-radius: 16px 16px 0 0; border-bottom: none;
+      max-height: 88vh; padding: 20px 14px 28px;
       padding-bottom: max(28px, env(safe-area-inset-bottom));
     }
     .modal h3 { font-size:13px; margin-bottom:14px; }
@@ -752,30 +656,16 @@
     .btn-primary, .btn-secondary { padding:10px 16px; font-size:13px; }
     .modal-footer { gap:8px; flex-wrap:wrap; }
     .modal-footer button { flex:1; text-align:center; }
-
-    /* Upload modal */
     .upload-area { padding:22px 12px; }
     #upload-week { width:80px !important; }
     #upload-year { width:80px !important; }
-
-    /* History: scrollable tab row */
     .tab-row { overflow-x:auto; flex-wrap:nowrap; gap:2px; }
     .tab-btn { padding:8px 10px; font-size:10px; white-space:nowrap; flex-shrink:0; }
-
-    /* History: scrollable table */
     #reset-history-body, #upload-history-body { overflow-x:auto; -webkit-overflow-scrolling:touch; }
     .hist-table { font-size:10px; min-width:560px; }
     .hist-table th, .hist-table td { padding:6px 8px; }
     .hist-table th { font-size:9px; }
-
-    /* Inner sub-tabs */
     #tab-reset > div:nth-child(2) { overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; }
-
-    /* Download modal rows */
-    #download-modal .modal > div > div { flex-direction:column; gap:10px; }
-    #download-modal .modal > div > div > div { flex-direction:column; }
-
-    /* Print modal */
     .print-sel-toolbar { gap:5px; flex-wrap:wrap; }
     .print-sel-toolbar .hbtn { font-size:10px; padding:5px 7px; }
     .print-list { max-height:300px; }
@@ -783,32 +673,21 @@
     .print-item-id { font-size:10px; }
     .print-item-old { display:none; }
     .print-item-type { font-size:9px; }
-
-    /* dl-row: wrap */
     .dl-row { flex-wrap:wrap; gap:6px; }
     .dl-row .hbtn { flex:1 1 auto; text-align:center; font-size:10px; padding:7px 6px; }
-  }
-
-  /* SETUP OVERLAY */
-  @media (max-width: 768px) {
+    .hist-mold-bar { flex-direction:column; align-items:stretch; gap:6px; }
+    #hist-mold-filter { max-width:100%; }
+    .scrap-section-banner { padding:10px 12px; font-size:11px; gap:8px; }
+    .empty-state { padding:40px 14px; }
+    .empty-state h3 { font-size:15px; }
+    .toast { left:12px; right:12px; bottom:16px; font-size:11px; padding:10px 14px; }
     .setup-overlay { align-items:flex-end; }
-    .setup-box {
-      width:100%; margin:0; border-radius:16px 16px 0 0;
-      padding:22px 14px 28px; max-height:90vh;
-    }
+    .setup-box { width:100%; margin:0; border-radius:16px 16px 0 0; padding:22px 14px 28px; max-height:90vh; }
     .setup-box h2 { font-size:13px; }
     .config-textarea { height:130px; font-size:11px; }
     .step-text { font-size:12px; }
     .setup-footer { flex-direction:column; }
     .setup-footer button { width:100%; }
-  }
-
-  /* MISC */
-  @media (max-width: 768px) {
-    .scrap-section-banner { padding:10px 12px; font-size:11px; gap:8px; }
-    .empty-state { padding:40px 14px; }
-    .empty-state h3 { font-size:15px; }
-    .toast { left:12px; right:12px; bottom:16px; font-size:11px; padding:10px 14px; }
   }
 </style>
 </head>
@@ -901,42 +780,27 @@
 <div class="stats-bar">
   <div class="stat-cell total" id="stat-cell-all" onclick="statFilter('all')" title="Show all active molds">
     <div class="stat-icon">🔧</div>
-    <div>
-      <div class="stat-num" id="stat-total">0</div>
-      <div class="stat-label">Total Active Molds</div>
-    </div>
+    <div><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total Active Molds</div></div>
     <div class="stat-cell-hint">show all</div>
   </div>
   <div class="stat-cell critical" id="stat-cell-critical" onclick="statFilter('critical')" title="Filter: Need Change (≤10% remaining)">
     <div class="stat-icon">🚨</div>
-    <div>
-      <div class="stat-num" id="stat-critical">0</div>
-      <div class="stat-label">Need Change ≤10%</div>
-    </div>
+    <div><div class="stat-num" id="stat-critical">0</div><div class="stat-label">Need Change ≤10%</div></div>
     <div class="stat-cell-hint">click to filter</div>
   </div>
   <div class="stat-cell warning" id="stat-cell-warning" onclick="statFilter('warning')" title="Filter: Low (11–25% remaining)">
     <div class="stat-icon">⚠️</div>
-    <div>
-      <div class="stat-num" id="stat-warning">0</div>
-      <div class="stat-label">Low Life 11–25%</div>
-    </div>
+    <div><div class="stat-num" id="stat-warning">0</div><div class="stat-label">Low Life 11–25%</div></div>
     <div class="stat-cell-hint">click to filter</div>
   </div>
   <div class="stat-cell good" id="stat-cell-ok" onclick="statFilter('ok')" title="Filter: Healthy (>25% remaining)">
     <div class="stat-icon">✅</div>
-    <div>
-      <div class="stat-num" id="stat-ok">0</div>
-      <div class="stat-label">Healthy &gt;25%</div>
-    </div>
+    <div><div class="stat-num" id="stat-ok">0</div><div class="stat-label">Healthy &gt;25%</div></div>
     <div class="stat-cell-hint">click to filter</div>
   </div>
   <div class="stat-cell scrap-cell" id="stat-cell-scrap" onclick="statFilter('scrap')" title="Switch to Scrapped tab">
     <div class="stat-icon">🗑️</div>
-    <div>
-      <div class="stat-num" id="stat-scrap" style="color:var(--muted-light)">0</div>
-      <div class="stat-label">Scrapped Molds</div>
-    </div>
+    <div><div class="stat-num" id="stat-scrap" style="color:var(--muted-light)">0</div><div class="stat-label">Scrapped Molds</div></div>
     <div class="stat-cell-hint">view scrapped</div>
   </div>
 </div>
@@ -1101,13 +965,21 @@
       <button class="tab-btn" onclick="switchTab('tab-upload')">⬆ Upload Log</button>
     </div>
     <div id="tab-reset" class="tab-content active">
-      <p style="font-size:13px;color:var(--text-dim);margin-bottom:10px">All component events — use the sub-tabs below to filter.</p>
-      <div style="display:flex;gap:3px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:0;overflow-x:auto">
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:10px">All component events — use the sub-tabs and Mold Die filter below.</p>
+      <div style="display:flex;gap:3px;margin-bottom:10px;border-bottom:2px solid var(--border);padding-bottom:0;overflow-x:auto">
         <button class="tab-btn active" id="inner-tab-btn-all"    onclick="switchInnerTab('all')"    style="font-size:12px;padding:8px 12px;white-space:nowrap">📋 All</button>
         <button class="tab-btn"        id="inner-tab-btn-change" onclick="switchInnerTab('change')" style="font-size:12px;padding:8px 12px;white-space:nowrap">🔧 Change Tool</button>
         <button class="tab-btn"        id="inner-tab-btn-reset"  onclick="switchInnerTab('reset')"  style="font-size:12px;padding:8px 12px;white-space:nowrap">↺ Reset</button>
         <button class="tab-btn"        id="inner-tab-btn-other"  onclick="switchInnerTab('other')"  style="font-size:12px;padding:8px 12px;white-space:nowrap">🗑 Scrap/Restore</button>
         <span id="inner-tab-count" style="margin-left:auto;align-self:center;font-family:var(--mono);font-size:11px;color:var(--muted-light);padding-right:6px;white-space:nowrap"></span>
+      </div>
+      <!-- ══ MOLD DIE FILTER BAR ══ -->
+      <div class="hist-mold-bar">
+        <span class="hist-mold-bar-label">🔍 Mold Die:</span>
+        <select id="hist-mold-filter" class="filter-select" onchange="onHistMoldFilter(this.value)">
+          <option value="all">All Mold Dies</option>
+        </select>
+        <span id="hist-mold-count"></span>
       </div>
       <div id="reset-history-body" style="overflow-x:auto"></div>
       <div class="dl-row">
@@ -1770,11 +1642,19 @@ function switchTab(tabId){
   document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.toggle('active',c.id===tabId); });
 }
 
+// ── HISTORY: mold die filter state ──
 var _innerHistTab = 'all';
+var _moldHistFilter = 'all';
 var _allResetsCache = [];
 
 function switchInnerTab(type) {
   _innerHistTab = type;
+  // Reset mold filter when switching event type tabs
+  _moldHistFilter = 'all';
+  var ms = document.getElementById('hist-mold-filter');
+  if (ms) ms.value = 'all';
+  var mc = document.getElementById('hist-mold-count');
+  if (mc) mc.textContent = '';
   ['all','change','reset','other'].forEach(function(t) {
     var btn = document.getElementById('inner-tab-btn-' + t);
     if (btn) btn.classList.toggle('active', t === type);
@@ -1782,20 +1662,44 @@ function switchInnerTab(type) {
   renderInnerHistoryTable(_allResetsCache);
 }
 
+// Called when user changes the Mold Die dropdown
+function onHistMoldFilter(moldId) {
+  _moldHistFilter = moldId;
+  renderInnerHistoryTable(_allResetsCache);
+}
+
 function renderInnerHistoryTable(allResets) {
   var filter = _innerHistTab;
+  var moldF  = _moldHistFilter;
+
   var filtered = allResets.filter(function(r) {
+    // Apply mold die filter first
+    if (moldF !== 'all' && r.moldId !== moldF) return false;
+    // Then event type filter
     if (filter === 'all')    return true;
     if (filter === 'change') return r.type === 'change';
     if (filter === 'reset')  return r.type === 'reset';
     return r.type !== 'change' && r.type !== 'reset';
   });
+
   var countEl = document.getElementById('inner-tab-count');
   if (countEl) countEl.textContent = filtered.length + ' event' + (filtered.length !== 1 ? 's' : '');
+
+  // Update mold count badge
+  var moldCountEl = document.getElementById('hist-mold-count');
+  if (moldCountEl) {
+    if (moldF !== 'all') {
+      moldCountEl.textContent = filtered.length + ' event' + (filtered.length !== 1 ? 's' : '') + ' for this mold';
+    } else {
+      moldCountEl.textContent = '';
+    }
+  }
+
   var rb = document.getElementById('reset-history-body');
   if (filtered.length === 0) {
     var labels = { all:'events', change:'tool change records', reset:'reset records', other:'scrap/restore events' };
-    rb.innerHTML = '<div class="hist-empty">No ' + (labels[filter] || 'events') + ' recorded yet.</div>';
+    var noMoldMsg = moldF !== 'all' ? ' for <strong style="color:var(--accent)">' + esc(moldF) + '</strong>' : '';
+    rb.innerHTML = '<div class="hist-empty">No ' + (labels[filter] || 'events') + noMoldMsg + ' recorded yet.</div>';
     return;
   }
   var typeStyles = {
@@ -1812,14 +1716,18 @@ function renderInnerHistoryTable(allResets) {
   filtered.forEach(function(r) {
     var s = typeStyles[r.type] || { icon:'•', label:(r.type||'EVENT').toUpperCase(), color:'var(--text-dim)', bg:'transparent', border:'transparent' };
     var badge = '<span style="display:inline-flex;align-items:center;gap:5px;background:' + s.bg + ';border:1.5px solid ' + s.border + ';border-radius:4px;padding:3px 9px;font-size:11px;font-weight:700;color:' + s.color + ';font-family:var(--mono);white-space:nowrap;letter-spacing:0.4px">' + s.icon + ' ' + s.label + '</span>';
+    // Highlight mold id if a specific mold is selected
+    var moldIdDisplay = moldF !== 'all'
+      ? '<span style="color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700">' + esc(r.moldId) + '</span>'
+      : '<span style="color:var(--accent);font-family:var(--mono);font-size:12px">' + esc(r.moldId) + '</span>';
     html += '<tr>'
       + '<td style="white-space:nowrap">' + fmtDate(r.date) + '</td>'
       + '<td style="color:var(--accent);font-family:var(--mono)">' + esc(r.workWeek) + '</td>'
       + '<td>' + badge + '</td>'
-      + '<td style="color:var(--accent);font-family:var(--mono);font-size:12px">' + esc(r.moldId) + '</td>'
+      + '<td>' + moldIdDisplay + '</td>'
       + '<td style="color:var(--text-dim)">' + esc(r.moldOld || '') + '</td>'
       + '<td style="font-family:var(--mono);font-size:12px">' + esc(r.component) + '</td>'
-      + '<td style="font-family:var(--mono);text-align:right">' + fmtNum(r.usedAtReset) + '</td>'
+      + '<td style="font-family:var(--mono);text-align:right">' + fmtNum(r.usedAtReset || r.usedAtChange || 0) + '</td>'
       + '<td style="font-family:var(--mono);text-align:right">' + (r.limit ? fmtNum(r.limit) : '—') + '</td>'
       + '<td style="color:var(--muted-light);font-size:12px">' + esc(r.notes || '') + '</td>'
       + '</tr>';
@@ -1834,19 +1742,50 @@ function renderHistoryTabs() {
     m.components.forEach(function(c) {
       if (c.resetHistory && c.resetHistory.length) {
         c.resetHistory.forEach(function(r) {
-          allResets.push({date:r.date,workWeek:r.workWeek||'—',type:r.type||'reset',moldId:r.moldId||m.id,moldOld:r.moldOld||m.old,component:r.component||c.name,usedAtReset:r.usedAtReset||r.usedAtChange||0,limit:r.limit,notes:r.notes||''});
+          allResets.push({
+            date:r.date, workWeek:r.workWeek||'—', type:r.type||'reset',
+            moldId:r.moldId||m.id, moldOld:r.moldOld||m.old,
+            component:r.component||c.name,
+            usedAtReset:r.usedAtReset||r.usedAtChange||0,
+            limit:r.limit, notes:r.notes||''
+          });
         });
       }
     });
   });
   allResets.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
   _allResetsCache = allResets;
+
+  // Reset state
   _innerHistTab = 'all';
+  _moldHistFilter = 'all';
   ['all','change','reset','other'].forEach(function(t) {
     var btn = document.getElementById('inner-tab-btn-' + t);
     if (btn) btn.classList.toggle('active', t === 'all');
   });
+
+  // Populate Mold Die dropdown — unique sorted list from all events
+  var moldIds = [];
+  var _seen = {};
+  allResets.forEach(function(r) {
+    if (r.moldId && !_seen[r.moldId]) { _seen[r.moldId] = true; moldIds.push(r.moldId); }
+  });
+  moldIds.sort();
+  var moldSel = document.getElementById('hist-mold-filter');
+  if (moldSel) {
+    var opts = '<option value="all">All Mold Dies (' + moldIds.length + ')</option>';
+    moldIds.forEach(function(id) {
+      opts += '<option value="' + id.replace(/&/g,'&amp;').replace(/"/g,'&quot;') + '">' + id.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</option>';
+    });
+    moldSel.innerHTML = opts;
+    moldSel.value = 'all';
+  }
+  var moldCountEl = document.getElementById('hist-mold-count');
+  if (moldCountEl) moldCountEl.textContent = '';
+
   renderInnerHistoryTable(allResets);
+
+  // Upload log tab
   var ub = document.getElementById('upload-history-body');
   if (uploadLog.length === 0) {
     ub.innerHTML = '<div class="hist-empty">No uploads recorded yet.</div>';
@@ -1860,7 +1799,17 @@ function renderHistoryTabs() {
     ub.innerHTML = uhtml;
   }
 }
-function openCompHistory(moldId){ openHistory(); switchTab('tab-reset'); }
+
+// 📋 icon on a mold card — opens history PRE-FILTERED to that mold
+function openCompHistory(moldId) {
+  openHistory();
+  switchTab('tab-reset');
+  // Pre-select this mold in the dropdown and filter
+  _moldHistFilter = moldId;
+  var moldSel = document.getElementById('hist-mold-filter');
+  if (moldSel) moldSel.value = moldId;
+  renderInnerHistoryTable(_allResetsCache);
+}
 
 function openDownload(){ document.getElementById('download-modal').classList.add('active'); }
 function csvEscape(v){ var s=String(v===null||v===undefined?'':v); if(s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0) s='"'+s.replace(/"/g,'""')+'"'; return s; }
